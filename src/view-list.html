@@ -1,0 +1,74 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="view-list">
+    <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      paper-card {
+        width: 100%;
+        max-width:500px;
+        margin-bottom:10px;
+      }
+      paper-card.white {
+        --paper-card-header-color: #fff;
+      }
+      a {
+          text-decoration: none !important;
+          color:inherit;
+      }
+    </style>
+
+    <iron-ajax auto
+    url="http://localhost:3000/api/v1/algorithms"
+    params='{}'
+    handle-as="json"
+    last-response="{{algorithmList}}"></iron-ajax>
+    <template is="dom-repeat" items="[[_getListItems(algorithmList)]]">
+
+        <paper-card heading="[[item.name]]" image="[[item.images.banner]]" alt="[[item.name]]" class="white">
+          <div class="card-content">
+            [[item.description]]
+          </div>
+          <div class="card-actions">
+            <a href$="[[_getItemHref(item.uniqueName)]]" tabindex="-1">
+              <paper-button raised>Try it!</paper-button>
+            </a>
+
+          </div>
+        </paper-card>
+      </template>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'view-list',
+            
+            _getItemHref: function(item) {
+              return '/algorithm/' + item;
+            },
+            _getListItems: function(items) {
+                // Return placeholder items when the items haven't loaded yet.
+                return items || [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+            }
+        });
+    </script>
+</dom-module>

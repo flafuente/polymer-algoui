@@ -1,0 +1,74 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="shared-styles.html">
+
+
+<dom-module id="view-algorithm">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+    <app-route
+            route="[[route]]"
+            pattern="/:algorithm"
+            data="{{routeData}}"></app-route>
+
+<!-- //TODO Create config file dev and production, choose between environments -->
+    <iron-ajax auto
+    url="[[petitionUrl]]"
+    params='{}'
+    handle-as="json"
+    last-response="{{algorithmDetails}}"></iron-ajax>
+    <div class="card">
+      <div class="circle">2</div>
+      <h1>[[algorithmDetails.name]]</h1>
+      <p>[[algorithmDetails.description]]</p>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'view-algorithm',
+      properties: {
+        route: Object,
+        routeData:{
+          type: Object,
+          observer: '_routeChanged'
+        },
+        algorithmDetails: {
+            type: Object,
+            observer: '_ajaxResponse'
+        },
+        algorithm: {
+          type: String,
+          observer: '_algorithmChanged'
+        }
+      },
+      _routeChanged: function(routeData) {
+        this.algorithm = routeData.algorithm;
+      },
+
+      _ajaxResponse: function(algorithmDetails) {
+          console.log("Response", algorithmDetails);
+      },
+
+      _algorithmChanged: function(algorithm) {
+        this.petitionUrl = 'http://localhost:3000/api/v1/algorithms/' + algorithm;
+      }
+    });
+  </script>
+</dom-module>
