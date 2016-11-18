@@ -165,6 +165,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           console.log("Response", algorithmDetails);
           // Load page import on demand. Show 404 page if fails
           var resolvedPageUrl = "";
+          
+          //Empty container
+          Polymer.dom(this.$.input_container).innerHTML = "";
+
           //create component
           for (index = 0; index < algorithmDetails.inputData.length; ++index) {
             resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/inputData/' + algorithmDetails.inputData[index] + '/' + algorithmDetails.inputData[index] + '.html');
