@@ -10,6 +10,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="shared-styles.html">
 
 
@@ -20,6 +23,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         display: block;
 
         padding: 10px;
+      }
+      paper-card {
+        width: 100%;
+        margin-bottom:10px;
+      }
+      paper-card.white {
+        --paper-card-header-color: #fff;
+      }
+      a {
+          text-decoration: none !important;
+          color:inherit;
+      }
+      #input_container{
+        overflow:hidden;
+      }
+      /*TODO THIS SHOULD BE FIX*/
+      .color0{
+        border:1px solid #BBDEFB;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+      .color1{
+        border:1px solid #F8BBD0;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+      .color2{
+        border:1px solid #FFCDD2;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+      .color3{
+        border:1px solid #E1BEE7;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+      .color4{
+        border:1px solid #B2EBF2;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
       }
     </style>
     <app-route
@@ -33,11 +81,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     params='{}'
     handle-as="json"
     last-response="{{algorithmDetails}}"></iron-ajax>
-    <div class="card">
+    <!-- <div class="card">
       <div class="circle">2</div>
       <h1>[[algorithmDetails.name]]</h1>
       <p>[[algorithmDetails.description]]</p>
-    </div>
+    </div> -->
+    <paper-card heading="[[algorithmDetails.name]]" image="[[algorithmDetails.images.banner]]" alt="[[algorithmDetails.name]]" class="white">
+      <div class="card-content">
+        [[algorithmDetails.description]]
+      </div>
+      <div class="card-actions">
+        <h3>Inputs:</h3>
+        <div id="input_container">
+        </div>
+
+          <paper-button on-tap="postData" raised>Process Data</paper-button>
+          <iron-ajax
+          id="processAjax"
+          handle-as="json"
+          content-type="application/json"
+          method="POST"
+          on-response="postComplete"
+          last-response="{{processResponse}}"></iron-ajax>
+      </div>
+
+      <div class="card-actions">
+        <h3>Result:</h3>
+        <div id="output_container">
+        </div>
+      </div>
+    </paper-card>
   </template>
 
   <script>
@@ -58,12 +131,47 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           observer: '_algorithmChanged'
         }
       },
+      postComplete: function() {
+        console.log("Result",this.processResponse);
+      },
+
+      _collectData: function() {
+        var dataCollected = {};
+        //TODO SUPPORT multiple elements same type.
+        for (index = 0; index < this.algorithmDetails.inputData.length; ++index) {
+          var name = this.algorithmDetails.inputData[index];
+          var component = this.shadowRoot.querySelector(name);
+          dataCollected[name]=component.output[name];
+        }
+        return dataCollected;
+      },
+      postData: function() {
+        var ironAjax = this.shadowRoot.querySelector('#processAjax');
+
+        ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
+        ironAjax.url = "http://localhost:3000/api/v1/algorithms/first-algorithm";
+        ironAjax.generateRequest();
+      },
       _routeChanged: function(routeData) {
         this.algorithm = routeData.algorithm;
+      },
+      createComp: function(element, index) {
+        var component = document.createElement(element);
+        component.setAttribute("class", "color"+index);
+        Polymer.dom(this.$.input_container).appendChild(component);
       },
 
       _ajaxResponse: function(algorithmDetails) {
           console.log("Response", algorithmDetails);
+          // Load page import on demand. Show 404 page if fails
+          var resolvedPageUrl = "";
+          //create component
+          for (index = 0; index < algorithmDetails.inputData.length; ++index) {
+            resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/inputData/' + algorithmDetails.inputData[index] + '/' + algorithmDetails.inputData[index] + '.html');
+            this.importHref(resolvedPageUrl, null, this._showPage404, true);
+            this.createComp(algorithmDetails.inputData[index],index);
+          }
+
       },
 
       _algorithmChanged: function(algorithm) {
