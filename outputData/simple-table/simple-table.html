@@ -1,0 +1,116 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
+
+
+<dom-module id="simple-table">
+    <template>
+      <style include="shared-styles">
+      :host {
+            display: inline-block;
+            width:100%;
+            max-height:300px;
+          }
+      </style>
+
+      <vaadin-grid demo items="[[rows]]" visible-rows="8">
+            <table id="main">
+              <thead>
+                <tr>
+                  <template is="dom-repeat" items="{{cols}}">
+                      <th>[[item]]</th>
+                  </template>
+                </tr>
+              </thead>
+            </table>
+          </vaadin-grid>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'simple-table',
+
+            properties: {
+                inputData: {
+                    type: String,
+                    reflectToAttribute: true,
+                    observer: '_dataReceived'
+                }
+            },
+
+            _dataReceived: function(content) {
+
+              content = JSON.parse(content);
+              console.log(content);
+              //Supported format:
+              /* {
+                  "rows": [
+                    [
+                      37,
+                      59,
+                      68,
+                      42
+                    ],
+                    [
+                      28,
+                      73,
+                      32,
+                      26
+                    ],
+                    [
+                      47,
+                      53,
+                      71,
+                      47
+                    ],
+                    [
+                      34,
+                      65,
+                      41,
+                      59
+                    ]
+                  ],
+                  "cols": [
+                    "MAIN",
+                    "TEST5-5",
+                    "CUA3",
+                    "FBFB"
+                  ]
+                } */
+                // Populate rows
+                var rows = [];
+                var colgroup = document.createElement("colgroup");
+                var container = this.shadowRoot.querySelector("#main");
+
+                for (index = 0; index < content.cols.length; ++index) {
+                  cellObject = {};
+                  for (x = 0; x < content.cols.length; ++x) {
+                    cellObject[content.cols[x]] = content.rows[index][x];
+                  }
+                  // Create and append col to colgroup
+                  var col = document.createElement("col");
+                  col.setAttribute("resizable",'');
+                  col.setAttribute("name",content.cols[index]);
+                  Polymer.dom(colgroup).appendChild(col);
+
+                  rows.push(cellObject);
+                }
+                console.log(colgroup);
+                Polymer.dom(container).appendChild(colgroup);
+
+                this.rows= rows;
+                this.cols = content.cols;
+                console.log(rows);
+            }
+        });
+    </script>
+</dom-module>

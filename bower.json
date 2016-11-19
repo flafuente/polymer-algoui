@@ -24,7 +24,9 @@
     "chart-elements": "robdodson/chart-elements#^3.1.3",
     "paper-slider": "PolymerElements/paper-slider#^1.0.12",
     "paper-item": "PolymerElements/paper-item#^1.2.1",
-    "iron-list": "PolymerElements/iron-list#^1.3.14"
+    "iron-list": "PolymerElements/iron-list#^1.3.14",
+    "google-chart": "GoogleWebComponents/google-chart#^1.1.1",
+    "vaadin-grid": "^1.2.0"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
