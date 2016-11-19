@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="shared-styles.html">
 
@@ -23,17 +24,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         padding: 10px;
       }
+      .card-header {
+        font-family: 'Roboto', 'Noto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -.012em;
+  line-height: 32px;
+      padding: 16px;
+}
+
       paper-card {
         width: 100%;
-        max-width:500px;
+        max-width:300px;
         margin-bottom:10px;
       }
       paper-card.white {
-        --paper-card-header-color: #fff;
+        --paper-card-header-color: #000;
       }
       a {
           text-decoration: none !important;
           color:inherit;
+      }
+      paper-tabs {
+        margin-bottom:20px;
+      }
+      paper-tabs, paper-toolbar {
+        background-color: var(--paper-blue-900);
+        color: #fff;
       }
     </style>
     <app-route
@@ -45,11 +63,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     params='{}'
     handle-as="json"
     last-response="{{dataTypesList}}"></iron-ajax>
+    <paper-tabs selected="0" selected-item="{{selectedType}}">
+      <paper-tab name="inputs">Input</paper-tab>
+      <paper-tab name="outputs">Output</paper-tab>
+    </paper-tabs>
     <template is="dom-repeat" items="[[_getListItems(dataTypesList)]]">
 
-        <paper-card heading="[[item.name]]" image="[[item.screenshot]]" alt="[[item.name]]" class="white">
+        <paper-card image="[[item.screenshot]]" alt="[[item.name]]" class="white">
+          <div class="card-header">
+            [[item.name]]
+          </div>
           <div class="card-content">
             [[item.description]]
+          </div>
+          <div class="card-actions">
+            Usage: [[item.uniqueName]]
           </div>
         </paper-card>
       </template>
@@ -68,13 +96,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               dataType: {
                 type: String,
                 observer: '_dataTypeChanged'
+              },
+              selectedType: {
+                type: String,
+                observer: '_selectedTypeChanged'
               }
             },
 
             _routeChanged: function(routeData) {
-              // if(visible){
                 this.dataType = routeData.dataType;
-              // }
+            },
+            _selectedTypeChanged: function(selectedType) {
+              if(selectedType){
+                this.dataType = selectedType.getAttribute('name');
+              }
+
+
             },
             _getItemHref: function(item) {
               return '/algorithm/' + item;
