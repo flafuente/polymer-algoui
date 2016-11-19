@@ -174,7 +174,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var ironAjax = this.shadowRoot.querySelector('#processAjax');
 
         ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
-        ironAjax.url = "http://localhost:3000/api/v1/algorithms/first-algorithm";
+        ironAjax.url = this.petitionUrl;
         ironAjax.generateRequest();
       },
       _routeChanged: function(routeData) {
