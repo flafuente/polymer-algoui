@@ -1,0 +1,94 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="view-data">
+    <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      paper-card {
+        width: 100%;
+        max-width:500px;
+        margin-bottom:10px;
+      }
+      paper-card.white {
+        --paper-card-header-color: #fff;
+      }
+      a {
+          text-decoration: none !important;
+          color:inherit;
+      }
+    </style>
+    <app-route
+            route="[[route]]"
+            pattern="/:dataType"
+            data="{{routeData}}"></app-route>
+    <iron-ajax auto
+    url="[[petitionUrl]]"
+    params='{}'
+    handle-as="json"
+    last-response="{{dataTypesList}}"></iron-ajax>
+    <template is="dom-repeat" items="[[_getListItems(dataTypesList)]]">
+
+        <paper-card heading="[[item.name]]" image="[[item.screenshot]]" alt="[[item.name]]" class="white">
+          <div class="card-content">
+            [[item.description]]
+          </div>
+        </paper-card>
+      </template>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'view-data',
+            properties: {
+              route: Object,
+              routeData:{
+                type: Object,
+                observer: '_routeChanged'
+              },
+              dataType: {
+                type: String,
+                observer: '_dataTypeChanged'
+              }
+            },
+
+            _routeChanged: function(routeData) {
+              // if(visible){
+                this.dataType = routeData.dataType;
+              // }
+            },
+            _getItemHref: function(item) {
+              return '/algorithm/' + item;
+            },
+            _getListItems: function(items) {
+                // Return placeholder items when the items haven't loaded yet.
+                return items || [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+            },
+
+            _dataTypeChanged: function(dataType) {
+              if(this.route.prefix == '/data'){
+                this.petitionUrl = 'http://localhost:3000/api/v1/' + dataType;
+              }
+            }
+        });
+    </script>
+</dom-module>
