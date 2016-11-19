@@ -88,7 +88,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             is: 'view-data',
             properties: {
-              route: Object,
               routeData:{
                 type: Object,
                 observer: '_routeChanged'
@@ -100,6 +99,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               selectedType: {
                 type: String,
                 observer: '_selectedTypeChanged'
+              },
+              route: {
+                type: Object,
+                observer: '_triggerLoad'
               }
             },
 
@@ -111,10 +114,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.dataType = selectedType.getAttribute('name');
               }
 
-
             },
             _getItemHref: function(item) {
               return '/algorithm/' + item;
+            },
+            _triggerLoad: function(item) {
+              if(this.route.prefix == '/data'){
+                this.petitionUrl = 'http://localhost:3000/api/v1/' + 'inputs';
+              }
             },
             _getListItems: function(items) {
                 // Return placeholder items when the items haven't loaded yet.
@@ -125,6 +132,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               if(this.route.prefix == '/data'){
                 this.petitionUrl = 'http://localhost:3000/api/v1/' + dataType;
               }
+            },
+
+            ready: function () {
+              // this.dataType = "inputs";
             }
         });
     </script>
