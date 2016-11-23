@@ -21,9 +21,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="my-icons.html">
-<link rel="import" href="view-list.html">
-<link rel="import" href="view-algorithm.html">
-<link rel="import" href="view-data.html">
 
 <dom-module id="my-app">
   <template>
@@ -137,8 +134,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _pageChanged: function(page) {
         // ********* Dynamic imports alter router  https://github.com/PolymerElements/app-route/issues/112
         // Load page import on demand. Show 404 page if fails
-        // var resolvedPageUrl = this.resolveUrl('view-' + page + '.html');
-        // this.importHref(resolvedPageUrl, null, this._showPage404, true);
+        var resolvedPageUrl = this.resolveUrl('view-' + page + '.html');
+        this.importHref(resolvedPageUrl, null, this._showPage404, true);
       },
 
       _showPage404: function() {
