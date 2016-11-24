@@ -1,0 +1,15 @@
+[{
+    "_id": "581b89fcd4b9840660507778",
+    "uniqueName": "simple-table",
+    "name": "Simple table",
+    "view": "custom-table-component-dir.html",
+    "screenshot": "/images/simple-table.png",
+    "description": "Simple table representation of data."
+}, {
+    "_id": "581b8a04d4b9840660507779",
+    "uniqueName": "simple-graph",
+    "name": "Simple graph",
+    "view": "custom-table-component-dir.html",
+    "screenshot": "/images/simple-graph.png",
+    "description": "Interactive bar graph to represent data."
+}]

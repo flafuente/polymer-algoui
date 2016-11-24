@@ -1,0 +1,17 @@
+[{
+    "_id": "581b8985d4b9840660507777",
+    "uniqueName": "tickers-list",
+    "name": "Tickers selector",
+    "apiSource": "ToBeDefined",
+    "view": "custom-tickers-component",
+    "screenshot": "/images/tickers-list.png",
+    "description": "Display a list of tickers, select the ones you are interested in."
+}, {
+    "_id": "581b8985d4b9840660507667",
+    "uniqueName": "profile-type",
+    "name": "Profile Type configurer",
+    "apiSource": "ToBeDefined",
+    "view": "custom-profile-component",
+    "screenshot": "/images/profile-type.png",
+    "description": "Profile config. What kind of profile do you have?. Tweak the different variables and get the real picture!"
+}]

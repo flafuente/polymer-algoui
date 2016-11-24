@@ -1,0 +1,12 @@
+{
+    "_id": "5816190cd4b9840660507776",
+    "uniqueName": "first-algorithm",
+    "name": "First algorithm",
+    "inputData": ["profile-type", "tickers-list"],
+    "outputData": ["simple-table", "simple-graph"],
+    "images": {
+        "banner": "/images/first-banner.jpg"
+    },
+    "description": "First algorithm for testing purposes",
+    "module": "algorithms/first-algorithm/init.js"
+}
