@@ -96,10 +96,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             attr-for-selected="name"
             fallback-selection="view404"
             role="main">
-          <view-list name="list"></view-list>
-          <view-algorithm  route="[[subroute]]" name="algorithm"></view-algorithm>
-          <!-- TODO FIX THIS- DESIGN ERROR  -->
-          <view-data  route="[[subroute]]" name="data"></view-data>
+          <view-list env="[[env]]" name="list"></view-list>
+          <view-data env="[[env]]" route="[[subroute]]" name="data"></view-data>
+          <view-algorithm env="[[env]]" route="[[subroute]]" name="algorithm"></view-algorithm>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
@@ -114,6 +113,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: String,
           reflectToAttribute: true,
           observer: '_pageChanged'
+        },
+        env: {
+          type: String,
+          value: 'dev'
         },
         pageSecond: {
           type: String,

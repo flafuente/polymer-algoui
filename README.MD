@@ -1,8 +1,7 @@
 # Financial Front
 
 ## TASKS:
--Use Config variable
--Mockup in jsons api calls
--Clean code
+-Clean code - pasar a archivo views las vistas
+-Preparar modulo horoscopo
 -Enable to load Same input/output twice
 -Bug: Cant access http://localhost:8080/algorithm/first-algorithm directly from url

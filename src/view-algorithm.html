@@ -14,6 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="shared-styles.html">
+<link rel="import" href="app-data.html">
 
 
 <dom-module id="view-algorithm">
@@ -75,22 +76,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin:5px;
       }
     </style>
+
+    <!--
+      app-data provides the dataSource for a given env.
+    -->
+    <app-data
+        env="[[env]]"
+        path="[[path]]"
+        data-source="{{dataSource}}"></app-data>
+
     <app-route
             route="[[route]]"
             pattern="/:algorithm"
             data="{{routeData}}"></app-route>
-
-<!-- //TODO Create config file dev and production, choose between environments -->
+            
     <iron-ajax auto
-    url="[[petitionUrl]]"
+    url="[[dataSource]]"
     params='{}'
     handle-as="json"
     last-response="{{algorithmDetails}}"></iron-ajax>
-    <!-- <div class="card">
-      <div class="circle">2</div>
-      <h1>[[algorithmDetails.name]]</h1>
-      <p>[[algorithmDetails.description]]</p>
-    </div> -->
+
     <paper-card heading="[[algorithmDetails.name]]" image="[[algorithmDetails.images.banner]]" alt="[[algorithmDetails.name]]" class="white">
       <div class="card-content">
         [[algorithmDetails.description]]
@@ -174,7 +179,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var ironAjax = this.shadowRoot.querySelector('#processAjax');
 
         ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
-        ironAjax.url = this.petitionUrl;
+        ironAjax.url = this.dataSource;
         ironAjax.generateRequest();
       },
       _routeChanged: function(routeData) {
@@ -209,7 +214,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _algorithmChanged: function(algorithm) {
         if(this.route.prefix == '/algorithm'){
-          this.petitionUrl = 'http://localhost:3000/api/v1/algorithms/' + algorithm;
+          this.path = 'algorithms/' + algorithm;
         }
       }
     });
