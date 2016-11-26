@@ -8,12 +8,13 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="../bower_components/paper-card/paper-card.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="shared-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../app-data.html">
 
 <dom-module id="view-list">
     <template>
@@ -36,9 +37,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           color:inherit;
       }
     </style>
+    <!--
+      app-data provides the dataSource for a given env.
+    -->
+    <app-data
+        env="[[env]]"
+        path="algorithms"
+        data-source="{{dataSource}}"></app-data>
 
     <iron-ajax auto
-    url="http://localhost:3000/api/v1/algorithms"
+    url="[[dataSource]]"
     params='{}'
     handle-as="json"
     last-response="{{algorithmList}}"></iron-ajax>
@@ -61,12 +69,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
         Polymer({
             is: 'view-list',
-            
+
             _getItemHref: function(item) {
               return '/algorithm/' + item;
             },
             _getListItems: function(items) {
-                // Return placeholder items when the items haven't loaded yet.
+                // Return placeholder items when the items haven't loaded yet. "Skeleton"
                 return items || [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
             }
         });

@@ -1,0 +1,189 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../app-data.html">
+
+
+<dom-module id="view-algorithm">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      paper-card {
+        width: 100%;
+        margin-bottom:10px;
+      }
+      paper-card.white {
+        --paper-card-header-color: #fff;
+      }
+      a {
+          text-decoration: none !important;
+          color:inherit;
+      }
+      #input_container{
+        overflow:hidden;
+      }
+      /*TODO THIS SHOULD BE FIX*/
+      .color0{
+        border:1px solid #BBDEFB;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+      .color1{
+        border:1px solid #F8BBD0;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+      .color2{
+        border:1px solid #FFCDD2;
+        overflow:hidden;
+        display:inline-block;
+        margin:5px;
+      }
+    </style>
+
+    <!--
+      app-data provides the dataSource for a given env.
+    -->
+    <app-data
+        env="[[env]]"
+        path="[[path]]"
+        data-source="{{dataSource}}"></app-data>
+
+    <app-route
+            route="[[route]]"
+            pattern="/:algorithm"
+            data="{{routeData}}"></app-route>
+
+    <iron-ajax auto
+    url="[[dataSource]]"
+    params='{}'
+    handle-as="json"
+    last-response="{{algorithmDetails}}"></iron-ajax>
+
+    <paper-card heading="[[algorithmDetails.name]]" image="[[algorithmDetails.images.banner]]" alt="[[algorithmDetails.name]]" class="white">
+      <div class="card-content">
+        [[algorithmDetails.description]]
+      </div>
+      <div class="card-actions">
+        <h2>Inputs:</h2>
+        <div id="input_container">
+        </div>
+
+          <paper-button on-tap="postData" raised>Process Data</paper-button>
+          <iron-ajax
+          id="processAjax"
+          handle-as="json"
+          content-type="application/json"
+          method="POST"
+          on-response="_postComplete"
+          last-response="{{processResponse}}"></iron-ajax>
+      </div>
+
+      <div class="card-actions">
+        <h2>Result:</h2>
+        <div id="output_container">
+        </div>
+      </div>
+    </paper-card>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'view-algorithm',
+      properties: {
+        route: Object,
+        routeData:{
+          type: Object,
+          observer: '_routeChanged'
+        },
+        algorithmDetails: {
+            type: Object,
+            observer: '_algorithmDetailsResponse'
+        }
+
+      },
+
+      _routeChanged: function(routeData) {
+        if(this.route.prefix == '/algorithm'){
+          this.path = 'algorithms/' + routeData.algorithm;
+          this.algorithm = routeData.algorithm;
+        }
+      },
+
+      _algorithmDetailsResponse: function(algorithmDetails) {
+          console.log("Response", algorithmDetails);
+          // Load page import on demand. Show 404 page if fails
+          var resolvedPageUrl = "";
+
+          //Empty container
+          Polymer.dom(this.$.input_container).innerHTML = "";
+
+          //create component for each input
+          var index = 0;
+          for (index = 0; index < algorithmDetails.inputData.length; ++index) {
+            resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/inputData/' + algorithmDetails.inputData[index] + '/' + algorithmDetails.inputData[index] + '.html');
+            this.importHref(resolvedPageUrl, null, this._showPage404, true);
+            this.createComp(this.$.input_container, algorithmDetails.inputData[index], index, null);
+          }
+
+      },
+
+      postData: function() { // Manual post using ironAjax to process algorithm
+        //Empty container
+        Polymer.dom(this.$.output_container).innerHTML = "";
+
+        var ironAjax = this.shadowRoot.querySelector('#processAjax');
+
+        ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
+        ironAjax.url = this.dataSource;
+        ironAjax.generateRequest();
+      },
+
+      _collectData: function() { // Collect data from input components
+        var dataCollected = {};
+
+        for (index = 0; index < this.algorithmDetails.inputData.length; ++index) {
+          var name = this.algorithmDetails.inputData[index];
+          var component = this.shadowRoot.querySelector(name);
+          dataCollected[name]=component.output[name];
+        }
+        return dataCollected;
+      },
+
+      _postComplete: function() { // Algorithm processing completed
+
+        // Get components from json keys
+        outputComponents = Object.keys(this.processResponse.result);
+        var resolvedPageUrl = "";
+
+        //Create component for each outputComponents
+        var index = 0;
+        for (index = 0; index < outputComponents.length; ++index) {
+          resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/outputData/' + outputComponents[index] + '/' + outputComponents[index] + '.html');
+          this.importHref(resolvedPageUrl, null, this._showPage404, true);
+          this.createComp(this.$.output_container, outputComponents[index],99, JSON.stringify(this.processResponse.result[outputComponents[index]]));
+
+        }
+      },
+
+      createComp: function(container, element, index, componentData) { // create dynamic component function
+        var component = document.createElement(element);
+        component.setAttribute("class", "color"+index);
+        if (componentData) {
+          component.setAttribute("input-data", componentData);
+        }
+        Polymer.dom(container).appendChild(component);
+      }
+
+    });
+  </script>
+</dom-module>

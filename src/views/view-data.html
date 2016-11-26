@@ -1,0 +1,141 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="../app-data.html">
+
+<dom-module id="view-data">
+    <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      .card-header {
+        font-family: 'Roboto', 'Noto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        font-size: 24px;
+        font-weight: 400;
+        letter-spacing: -.012em;
+        line-height: 32px;
+            padding: 16px;
+      }
+
+      paper-card {
+        width: 100%;
+        max-width:300px;
+        margin-bottom:10px;
+      }
+      paper-card.white {
+        --paper-card-header-color: #000;
+      }
+      a {
+          text-decoration: none !important;
+          color:inherit;
+      }
+      paper-tabs {
+        margin-bottom:20px;
+      }
+      paper-tabs, paper-toolbar {
+        background-color: var(--paper-blue-900);
+        color: #fff;
+      }
+    </style>
+    <!--
+      app-data provides the dataSource for a given env.
+    -->
+    <app-data
+        env="[[env]]"
+        path="[[path]]"
+        data-source="{{dataSource}}"></app-data>
+
+    <app-route
+            route="[[route]]"
+            pattern="/:dataType"
+            data="{{routeData}}"></app-route>
+
+    <iron-ajax auto
+    url="[[dataSource]]"
+    params='{}'
+    handle-as="json"
+    last-response="{{dataTypesList}}"></iron-ajax>
+
+    <paper-tabs selected="0" selected-item="{{selectedType}}">
+      <paper-tab name="inputs">Input</paper-tab>
+      <paper-tab name="outputs">Output</paper-tab>
+    </paper-tabs>
+
+    <template is="dom-repeat" items="[[_getListItems(dataTypesList)]]">
+
+        <paper-card image="[[item.screenshot]]" alt="[[item.name]]" class="white">
+          <div class="card-header">
+            [[item.name]]
+          </div>
+          <div class="card-content">
+            [[item.description]]
+          </div>
+          <div class="card-actions">
+            Usage: [[item.uniqueName]]
+          </div>
+        </paper-card>
+      </template>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'view-data',
+            properties: {
+                routeData: {
+                    type: Object,
+                    observer: '_routeChanged'
+                },
+                dataType: {
+                    type: String,
+                    observer: '_dataTypeChanged'
+                },
+                selectedType: {
+                    type: String,
+                    observer: '_selectedTypeChanged'
+                },
+                route: {
+                    type: Object,
+                    observer: '_triggerLoad'
+                }
+            },
+
+            _routeChanged: function(routeData) {
+                this.dataType = routeData.dataType;
+            },
+            _selectedTypeChanged: function(selectedType) {
+                if (selectedType) {
+                    this.dataType = selectedType.getAttribute('name');
+                }
+
+            },
+            _getItemHref: function(item) {
+                return '/algorithm/' + item;
+            },
+            _triggerLoad: function(item) {
+                if (this.route.prefix == '/data') {
+                    this.path = 'inputs';
+                }
+            },
+            _getListItems: function(items) {
+                // Return placeholder items when the items haven't loaded yet. "Skeleton"
+                return items || [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+            },
+
+            _dataTypeChanged: function(dataType) {
+                if (this.route.prefix == '/data') {
+                    this.path = dataType;
+                }
+            }
+            
+        });
+    </script>
+</dom-module>
