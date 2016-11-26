@@ -1,13 +1,3 @@
-<!--
-@license
-Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
-
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
@@ -58,23 +48,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         display:inline-block;
         margin:5px;
       }
-      .color3{
-        border:1px solid #E1BEE7;
-        overflow:hidden;
-        display:inline-block;
-        margin:5px;
-      }
-      .color4{
-        border:1px solid #B2EBF2;
-        overflow:hidden;
-        display:inline-block;
-        margin:5px;
-      }
-      .color99{
-        overflow:hidden;
-        display:inline-block;
-        margin:5px;
-      }
     </style>
 
     <!--
@@ -111,7 +84,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           handle-as="json"
           content-type="application/json"
           method="POST"
-          on-response="postComplete"
+          on-response="_postComplete"
           last-response="{{processResponse}}"></iron-ajax>
       </div>
 
@@ -134,67 +107,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
         algorithmDetails: {
             type: Object,
-            observer: '_ajaxResponse'
-        },
-        algorithm: {
-          type: String,
-          observer: '_algorithmChanged'
+            observer: '_algorithmDetailsResponse'
         }
 
       },
-      postComplete: function() {
-        console.log("Result",this.processResponse.result);
-        // Get keys from json
-        outputComponents = Object.keys(this.processResponse.result);
-        // Load page import on demand. Show 404 page if fails
-        var resolvedPageUrl = "";
 
-
-
-
-        //create component
-        var index = 0;
-        for (index = 0; index < outputComponents.length; ++index) {
-          resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/outputData/' + outputComponents[index] + '/' + outputComponents[index] + '.html');
-          this.importHref(resolvedPageUrl, null, this._showPage404, true);
-          this.createComp(this.$.output_container, outputComponents[index],99, JSON.stringify(this.processResponse.result[outputComponents[index]]));
-
-        }
-      },
-
-      _collectData: function() {
-        var dataCollected = {};
-        //TODO SUPPORT multiple elements same type.
-        for (index = 0; index < this.algorithmDetails.inputData.length; ++index) {
-          var name = this.algorithmDetails.inputData[index];
-          var component = this.shadowRoot.querySelector(name);
-          dataCollected[name]=component.output[name];
-        }
-        return dataCollected;
-      },
-      postData: function() {
-        //Empty container
-        Polymer.dom(this.$.output_container).innerHTML = "";
-
-        var ironAjax = this.shadowRoot.querySelector('#processAjax');
-
-        ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
-        ironAjax.url = this.dataSource;
-        ironAjax.generateRequest();
-      },
       _routeChanged: function(routeData) {
-        this.algorithm = routeData.algorithm;
-      },
-      createComp: function(container, element, index, componentData) {
-        var component = document.createElement(element);
-        component.setAttribute("class", "color"+index);
-        if (componentData) {
-          component.setAttribute("input-data", componentData);
+        if(this.route.prefix == '/algorithm'){
+          this.path = 'algorithms/' + routeData.algorithm;
+          this.algorithm = routeData.algorithm;
         }
-        Polymer.dom(container).appendChild(component);
       },
 
-      _ajaxResponse: function(algorithmDetails) {
+      _algorithmDetailsResponse: function(algorithmDetails) {
           console.log("Response", algorithmDetails);
           // Load page import on demand. Show 404 page if fails
           var resolvedPageUrl = "";
@@ -202,7 +127,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //Empty container
           Polymer.dom(this.$.input_container).innerHTML = "";
 
-          //create component
+          //create component for each input
           var index = 0;
           for (index = 0; index < algorithmDetails.inputData.length; ++index) {
             resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/inputData/' + algorithmDetails.inputData[index] + '/' + algorithmDetails.inputData[index] + '.html');
@@ -212,11 +137,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       },
 
-      _algorithmChanged: function(algorithm) {
-        if(this.route.prefix == '/algorithm'){
-          this.path = 'algorithms/' + algorithm;
+      postData: function() { // Manual post using ironAjax to process algorithm
+        //Empty container
+        Polymer.dom(this.$.output_container).innerHTML = "";
+
+        var ironAjax = this.shadowRoot.querySelector('#processAjax');
+
+        ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
+        ironAjax.url = this.dataSource;
+        ironAjax.generateRequest();
+      },
+
+      _collectData: function() { // Collect data from input components
+        var dataCollected = {};
+
+        for (index = 0; index < this.algorithmDetails.inputData.length; ++index) {
+          var name = this.algorithmDetails.inputData[index];
+          var component = this.shadowRoot.querySelector(name);
+          dataCollected[name]=component.output[name];
         }
+        return dataCollected;
+      },
+
+      _postComplete: function() { // Algorithm processing completed
+
+        // Get components from json keys
+        outputComponents = Object.keys(this.processResponse.result);
+        var resolvedPageUrl = "";
+
+        //Create component for each outputComponents
+        var index = 0;
+        for (index = 0; index < outputComponents.length; ++index) {
+          resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/outputData/' + outputComponents[index] + '/' + outputComponents[index] + '.html');
+          this.importHref(resolvedPageUrl, null, this._showPage404, true);
+          this.createComp(this.$.output_container, outputComponents[index],99, JSON.stringify(this.processResponse.result[outputComponents[index]]));
+
+        }
+      },
+
+      createComp: function(container, element, index, componentData) { // create dynamic component function
+        var component = document.createElement(element);
+        component.setAttribute("class", "color"+index);
+        if (componentData) {
+          component.setAttribute("input-data", componentData);
+        }
+        Polymer.dom(container).appendChild(component);
       }
+
     });
   </script>
 </dom-module>
