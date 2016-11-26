@@ -1,7 +1,6 @@
 # Financial Front
 
 ## TASKS:
--Clean code - pasar a archivo views las vistas
 -Preparar modulo horoscopo
 -Preparar presentacion
 
