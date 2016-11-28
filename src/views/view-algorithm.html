@@ -162,7 +162,7 @@
       _postComplete: function() { // Algorithm processing completed
 
         // Get components from json keys
-        outputComponents = Object.keys(this.processResponse.result);
+        outputComponents = Object.keys(this.processResponse);
         var resolvedPageUrl = "";
 
         //Create component for each outputComponents
@@ -170,7 +170,7 @@
         for (index = 0; index < outputComponents.length; ++index) {
           resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/outputData/' + outputComponents[index] + '/' + outputComponents[index] + '.html');
           this.importHref(resolvedPageUrl, null, this._showPage404, true);
-          this.createComp(this.$.output_container, outputComponents[index],99, JSON.stringify(this.processResponse.result[outputComponents[index]]));
+          this.createComp(this.$.output_container, outputComponents[index],99, JSON.stringify(this.processResponse[outputComponents[index]]));
 
         }
       },
