@@ -1,0 +1,52 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-date-picker/paper-date-picker.html">
+
+<dom-module id="simple-date">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+        }
+      </style>
+
+
+<paper-date-picker date="{{dateInput}}"></paper-date-picker>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'simple-date',
+            properties: {
+              output: {
+                type: Object,
+                reflectToAttribute: true,
+              },
+              dateInput: {
+                type: String,
+                observer: '_updateDataset'
+              }
+          },
+          _updateDataset: function(date) {
+
+            // console.log("Date", moment(date).format(format));
+            var check = moment(date, 'YYYY/MM/DD');
+            var month = check.format('M');
+            var day   = check.format('D');
+            var year  = check.format('YYYY');
+            this.output = { "simple-date" :{day:day,month:month,year:year} };
+          },
+
+          ready: function () {
+            //today
+            var check = moment();
+            var month = check.format('M');
+            var day   = check.format('D');
+            var year  = check.format('YYYY');
+            this.output = { "simple-date" :{day:day,month:month,year:year} };
+            console.log("LOADED!");
+
+          },
+        });
+    </script>
+</dom-module>
