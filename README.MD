@@ -1,7 +1,6 @@
 # Financial Front
 
 ## TASKS:
--Preparar modulo horoscopo
 -Preparar presentacion
 
 -Enable to load Same input/output twice
