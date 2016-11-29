@@ -69,7 +69,7 @@
         <app-toolbar>Menu</app-toolbar>
         <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <a name="list" href="/list">Algorithms List</a>
-          <a name="data" href="/data">Data List</a>
+          <a name="elements" href="/elements">Elements List</a>
         </iron-selector>
       </app-drawer>
 
@@ -91,7 +91,7 @@
 
           <!-- Components list  -->
           <view-list env="[[env]]" name="list"></view-list>
-          <view-data env="[[env]]" route="[[subroute]]" name="data"></view-data>
+          <view-elements env="[[env]]" route="[[subroute]]" name="elements"></view-elements>
           <view-algorithm env="[[env]]" route="[[subroute]]" name="algorithm"></view-algorithm>
           <view-view404 name="view404"></view-view404>
 

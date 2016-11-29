@@ -7,7 +7,7 @@
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../app-data.html">
 
-<dom-module id="view-data">
+<dom-module id="view-elements">
     <template>
     <style include="shared-styles">
       :host {
@@ -88,7 +88,7 @@
     <script>
         Polymer({
 
-            is: 'view-data',
+            is: 'view-elements',
             properties: {
                 routeData: {
                     type: Object,
@@ -121,7 +121,7 @@
                 return '/algorithm/' + item;
             },
             _triggerLoad: function(item) {
-                if (this.route.prefix == '/data') {
+                if (this.route.prefix == '/elements') {
                     this.path = 'inputs';
                 }
             },
@@ -131,11 +131,11 @@
             },
 
             _dataTypeChanged: function(dataType) {
-                if (this.route.prefix == '/data') {
+                if (this.route.prefix == '/elements') {
                     this.path = dataType;
                 }
             }
-            
+
         });
     </script>
 </dom-module>
