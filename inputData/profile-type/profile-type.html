@@ -1,0 +1,98 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/chart-elements/chart-elements.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<dom-module id="profile-type">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+        }
+        #chart{
+          float:left;
+        }
+        .controls {
+          float:left;
+        }
+      </style>
+
+
+      <chart-radar id="chart" class="rectangular-chart" data="[[data]]"></chart-radar>
+      <div class="controls">
+        Risk <paper-slider value="{{risk}}"></paper-slider>
+        Beta <paper-slider value="{{beta}}"></paper-slider>
+        Information Ratio <paper-slider value="{{ratio}}"></paper-slider>
+        Expected Return <paper-slider value="{{return}}"></paper-slider>
+        Sharpe <paper-slider value="{{sharpe}}"></paper-slider>
+      </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'profile-type',
+            properties: {
+              output: {
+                type: Object,
+                reflectToAttribute: true,
+              },
+              risk: {
+                type: String,
+                value: 50,
+                observer: '_updateDataset'
+              },
+              beta: {
+                type: String,
+                value: 50,
+                observer: '_updateDataset'
+              },
+              ratio: {
+                type: String,
+                value: 50,
+                observer: '_updateDataset'
+              },
+              return: {
+                type: String,
+                value: 50,
+                observer: '_updateDataset'
+              },
+              sharpe: {
+                type: String,
+                value: 50,
+                observer: '_updateDataset'
+              }
+          },
+          _updateDataset: function() {
+            this.data = {
+              labels: ["Risk", "Beta", "Information ratio", "Expected return", "Sharpe"],
+              datasets: [
+                {
+                  label: "My Profile ",
+                  backgroundColor: "rgba(33,150,243,0.2)",
+                  borderColor: "rgba(33,150,243,1)",
+                  pointBackgroundColor: "rgba(0,150,136,1)",
+                  pointBorderColor: "#fff",
+                  pointHoverBackgroundColor: "#fff",
+                  pointHoverBorderColor: "rgba(0,150,136,1)",
+                  data: [this.risk, this.beta, this.ratio, this.return, this.sharpe]
+                }
+              ]
+            };
+            var calc = (this.risk+this.beta+this.ratio+this.return+this.sharpe)/5;
+            this.output = { "profile-type" :calc };
+          },
+
+          ready: function () {
+            this.output = {"profile-type":"50"};
+
+              // this.risk = 60;
+              // this.beta = 33;
+              // this.ratio = 89;
+              // this.return = 51;
+              // this.sharpe = 30;
+
+
+          },
+        });
+    </script>
+</dom-module>

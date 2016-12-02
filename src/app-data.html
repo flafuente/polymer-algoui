@@ -1,0 +1,45 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="app-data">
+    <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+    </style>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'app-data',
+            properties: {
+              dataSource:{
+                type: Object,
+                notify: true
+              },
+              path: String,
+              env: String,
+              environments: {
+                type: Object,
+                value: genEnvironments()
+              }
+            },
+            observers: [
+              '_createDataSource(path,env)'
+            ],
+
+            _createDataSource: function(path, env) {
+              var source = this.environments[env].source + path + this.environments[env].ext;
+              this.dataSource = source;
+            },
+        });
+        function genEnvironments() {
+          return {
+            "dev":{"source": "http://localhost:3000/api/v1/", "ext":""},
+            "prod":{"source":"http://api.algoui:3000/api/v1/", "ext":""},
+            "local":{"source": "/statics/", "ext":".json"}
+          };
+        }
+    </script>
+</dom-module>

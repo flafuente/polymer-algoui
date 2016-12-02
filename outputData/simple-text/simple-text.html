@@ -1,0 +1,36 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+
+<dom-module id="simple-text">
+    <template>
+      <style include="shared-styles">
+      :host {
+            display: block;
+          }
+      </style>
+
+      <div class="card" id="html_content">
+
+      </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'simple-text',
+
+            properties: {
+                inputData: {
+                    type: String,
+                    reflectToAttribute: true,
+                    observer: '_dataReceived'
+                }
+            },
+
+            _dataReceived: function(content) {
+              content = JSON.parse(content);
+              console.log(content.data);
+              Polymer.dom(this.$.html_content).innerHTML = content.data;
+            }
+        });
+    </script>
+</dom-module>
