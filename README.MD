@@ -21,8 +21,11 @@ Install [bower](https://github.com/bower/bower):
     polymer init
 
 ##### Screenshots
+![Screenshot 1](https://raw.githubusercontent.com/flafuente/polymer-algoui/dev/images/screenshots/home.png)
 
+![Screenshot 2](https://raw.githubusercontent.com/flafuente/polymer-algoui/dev/images/screenshots/elementslist.png)
 
+![Screenshot 3](https://raw.githubusercontent.com/flafuente/polymer-algoui/dev/images/screenshots/algorithmview.png)
 
 ## Upcoming features:
 -Enable to load same elements input/output twice
