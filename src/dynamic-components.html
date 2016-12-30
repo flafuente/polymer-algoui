@@ -1,0 +1,116 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="./shared-styles.html">
+
+<dom-module id="dynamic-components">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+        }
+        #elements_container{
+          overflow:hidden;
+        }
+        /*TODO THIS SHOULD BE FIX*/
+        .color0{
+          border:1px solid #BBDEFB;
+          overflow:hidden;
+          display:inline-block;
+          margin:5px;
+        }
+        .color1{
+          border:1px solid #F8BBD0;
+          overflow:hidden;
+          display:inline-block;
+          margin:5px;
+        }
+        .color2{
+          border:1px solid #FFCDD2;
+          overflow:hidden;
+          display:inline-block;
+          margin:5px;
+        }
+      </style>
+
+      <div id="elements_container">
+
+      </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'dynamic-components',
+            properties: {
+              elements:{
+                type: Object,
+                observer: '_elementsReceived'
+              },
+              elementsOut:{
+                type: Object,
+                observer: '_elementsReceivedOut'
+              },
+              output: {
+                  type: Array,
+                  observer: '_setCollectedData'
+                },
+              collectedData: {
+                  type: Object,
+                  notify: true,
+                  value: {}
+                }
+
+            },
+            _elementsReceived: function(algorithmDetails) {
+              Polymer.dom(this.$.elements_container).innerHTML = "";
+              var index = 0;
+              for (index = 0; index < algorithmDetails.length; ++index) {
+                var resolvedPageUrl = this.resolveUrl( '/inputData/' + algorithmDetails[index] + '/' + algorithmDetails[index] + '.html');
+                this.importHref(resolvedPageUrl, null, null, true);
+                this._createComp(this.$.elements_container, algorithmDetails[index], index, null);
+              }
+
+            },
+            _elementsReceivedOut: function(algorithmDetails) {
+              Polymer.dom(this.$.elements_container).innerHTML = "";
+              //Create component for each algorithmDetails
+              outputComponents = Object.keys(algorithmDetails);
+              var index = 0;
+              for (index = 0; index < outputComponents.length; ++index) {
+                var resolvedPageUrl = this.resolveUrl( '/outputData/' + outputComponents[index] + '/' + outputComponents[index] + '.html');
+                this.importHref(resolvedPageUrl, null, null, true);
+                this._createComp(this.$.elements_container, outputComponents[index],99, JSON.stringify(algorithmDetails[outputComponents[index]]));
+              }
+
+            },
+            _createComp: function(container, element, index, componentData) { // create dynamic component function
+              var component = document.createElement(element);
+              component.setAttribute("class", "color"+index);
+              if (componentData) {
+                //Custom attribute only for output elements
+                component.setAttribute("input-data", componentData);
+              }else {
+                //Custom Listener only for input elements
+                component.addEventListener('output-changed', this._customListener('output'));
+              }
+
+              Polymer.dom(container).appendChild(component);
+            },
+
+            _customListener: function (varName) {
+              var _this = this;
+              return function (evt) {
+                var newValue = evt.detail.value;
+                if(_this[varName] != newValue) {
+                  _this[varName] = newValue;
+                }
+              };
+            },
+
+            _setCollectedData: function (value) {
+              var name = Object.keys(value)[0];
+              this.collectedData[name] = value[name];
+            }
+        });
+    </script>
+</dom-module>
