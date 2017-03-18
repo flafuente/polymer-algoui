@@ -28,7 +28,8 @@
     "google-chart": "GoogleWebComponents/google-chart#^1.1.1",
     "vaadin-grid": "^1.2.0",
     "paper-tabs": "PolymerElements/paper-tabs#^1.7.0",
-    "paper-date-picker": "polymer-paper-date-picker#^1.2.0"
+    "paper-date-picker": "polymer-paper-date-picker#^1.2.0",
+    "polymerfire": "firebase/polymerfire#^0.10.3"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
