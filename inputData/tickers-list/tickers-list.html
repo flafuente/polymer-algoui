@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
@@ -81,13 +82,17 @@
                   @apply(--layout-flex);
                 }
       </style>
-
+    <iron-ajax auto
+    url="/statics/tickerlist.json"
+    params='{}'
+    handle-as="json"
+    last-response="{{data}}"></iron-ajax>
       <iron-list id="itemsList" items="[[data]]" selected-items="{{selectedItems}}" selection-enabled multi-selection>
                   <template>
                     <div>
-                      <div tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.code]]" class$="[[_computedClass(selected)]]">
+                      <div tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.symbol]]" class$="[[_computedClass(selected)]]">
                         <div class="avatar">
-                          [[item.code]]
+                          [[item.symbol]]
                         </div>
                         <div class="pad">
                           <div class="primary">
@@ -132,7 +137,7 @@
             if(this.selectedItems.length>0){
               var selected = [];
               for (index = 0; index < this.selectedItems.length; ++index) {
-                selected.push(this.selectedItems[index].code);
+                selected.push(this.selectedItems[index].symbol);
               }
               this.output = {"tickers-list":selected};
             }
@@ -140,28 +145,28 @@
 
           ready: function () {
             this.output = {"tickers-list":[]};
-              this.data = [{
-                "code": "ECX",
-                "name": "External Cit"
-              },{
-                "code": "JSJ & HYK",
-                "name": "Jass and Xsa"
-              },{
-                "code": "MOO",
-                "name": "Vector agrobusiness"
-              },{
-                "code": "ALP",
-                "name": "Another business"
-              },{
-                "code": "TTLE",
-                "name": "Test Business"
-              },{
-                "code": "MOORN",
-                "name": "Morning hugs"
-              },{
-                "code": "YU & XOU",
-                "name": "Chinese restaurant"
-              }];
+              // this.data = [{
+              //   "code": "ECX",
+              //   "name": "External Cit"
+              // },{
+              //   "code": "JSJ & HYK",
+              //   "name": "Jass and Xsa"
+              // },{
+              //   "code": "MOO",
+              //   "name": "Vector agrobusiness"
+              // },{
+              //   "code": "ALP",
+              //   "name": "Another business"
+              // },{
+              //   "code": "TTLE",
+              //   "name": "Test Business"
+              // },{
+              //   "code": "MOORN",
+              //   "name": "Morning hugs"
+              // },{
+              //   "code": "YU & XOU",
+              //   "name": "Chinese restaurant"
+              // }];
           }
         });
     </script>
