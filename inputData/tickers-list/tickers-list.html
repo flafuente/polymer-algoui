@@ -5,169 +5,226 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-list/iron-list.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 
 
 <dom-module id="tickers-list">
-    <template>
-      <style include="shared-styles">
-      :host {
-            display: block;
-            max-height:300px;
-            min-width:350px;
-            overflow-y:auto;
-            float:left;
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+        max-height: 300px;
+        min-width: 350px;
+        overflow-y: auto;
+        float: left;
+      }
+      
+      .content {
+        @apply(--layout-vertical);
+        height: 100%;
+      }
+      
+      .itemsList>div {
+        @apply(--layout-flex);
+        display: flex;
+      }
+      
+      .itemsList>div>div {
+        /*flex-grow: 1;*/
+      }
+      
+      .itemsList {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+      .selectedList {
+        max-height: 70px;
+        overflow-y: auto;
+        max-width: 380px;
+      }
+      .selectedList > div{
+        float:left;
+        
+      }
+      
+      .item {
+        @apply(--layout-horizontal);
+        cursor: pointer;
+        padding: 16px 22px;
+        border-bottom: 1px solid #DDD;
+      }
+      
+      .item:focus,
+      .item.selected:focus {
+        outline: 0;
+        background-color: #ddd;
+      }
+      
+      .item.selected .star {
+        color: var(--paper-blue-600);
+      }
+      
+      .symbol {
+        box-sizing: border-box;
+        background-color: #009688;
+        color: #fff;
+        width: 90px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+      
+      .pad {
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        padding: 0 16px;
+        max-width: 250px;
+        /*width:100px;*/
+      }
+      
+      .primary {
+        font-size: 16px;
+      }
+      
+      .secondary {
+        font-size: 14px;
+      }
+      
+      .dim {
+        color: gray;
+      }
+      
+      .star {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+      
+      .no-selection {
+        color: #999;
+        margin-left: 10px;
+        line-height: 50px;
+      }
+      
+      .itemsList {
+        @apply(--layout-flex);
+      }
+      
+      .row:hover {
+        background-color: #ECECEC;
+      }
+    </style>
+    <iron-ajax auto url="/statics/tickerlist.json" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+    <div class="selectedList">
+
+      <template is="dom-repeat" items="{{selectedItems}}">
+        <div symbol$="[[item]]" aria-label$="Select/Deselect [[item]]" on-tap="deSelect">
+          <div class="symbol">
+            [[item]]
+          </div>
+        </div>
+
+      </template>
+    </div>
+    <paper-input label="Search" value="{{searchParam}}"></paper-input>
+
+    <div class="itemsList">
+      <template is="dom-repeat" items="{{filtered}}">
+        <div symbol$="[[item.symbol]]" class="row" aria-label$="Select/Deselect [[item.symbol]]" on-tap="selected">
+          <div class="symbol">
+            [[item.symbol]]
+          </div>
+          <div class="pad">
+            <div class="primary">
+              [[item.name]]
+            </div>
+          </div>
+          <iron-icon icon="add" class="star"></iron-icon>
+        </div>
+        <div class="border"></div>
+
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'tickers-list',
+      properties: {
+        output: {
+          type: Array,
+          reflectToAttribute: true,
+          notify: true,
+        },
+        data: {
+          type: Array,
+          observer: '_dataChanged',
+        },
+
+        selectedItems: {
+          type: Array
+        },
+        searchParam: {
+          type: String,
+          observer: '_searchChanged'
+        }
+      },
+      observers: [
+        '_updateOutput(selectedItems.splices)'
+      ],
+      iconForItem: function (item) {
+        debugger;
+        for (var i = 0; i < this.selectedItems.length; i++) {
+          if (this.selectedItems[i].symbol == item.symbol) {
+            return 'star';
           }
-          iron-list {
-            flex: 1 1 auto;
-            max-height:300px;
+        }
+        return 'star-border';
+      },
+      selected: function (e) {
+        if (this.selectedItems.indexOf(e.currentTarget.attributes.symbol.value) === -1) {
+          this.push('selectedItems', e.currentTarget.attributes.symbol.value)
+        }
+      },
+
+      deSelect: function (e) {
+        var index = this.selectedItems.indexOf(e.currentTarget.attributes.symbol.value);
+        this.splice('selectedItems', index, 1);
+      },
+      _searchChanged: function (param, oldParam) {
+        // In case string contained in last search use filtered dataset
+        var targetArray = (oldParam && (param.slice(0, -1) === oldParam)) ? this.filtered : this.data;
+
+        var items = []
+        for (var i = 0; i < targetArray.length; i++) {
+          if (targetArray[i].name.indexOf(param) !== -1) {
+            items.push(targetArray[i]);
           }
-
-                .content {
-                  @apply(--layout-vertical);
-                  height: 100%;
-                }
-
-                #itemsList,
-                #selectedItemsList {
-                  @apply(--layout-flex);
-                }
-                .item {
-                  @apply(--layout-horizontal);
-                  cursor: pointer;
-                  padding: 16px 22px;
-                  border-bottom: 1px solid #DDD;
-                }
-                .item:focus,
-                .item.selected:focus {
-                  outline: 0;
-                  background-color: #ddd;
-                }
-                .item.selected .star {
-                  color: var(--paper-blue-600);
-                }
-                .avatar {
-
-                  box-sizing: border-box;
-                  background-color: #009688;
-                  color:#fff;
-                  width: 90px;
-                  text-align: center;
-                }
-                .pad {
-                  @apply(--layout-flex);
-                  @apply(--layout-vertical);
-                  padding: 0 16px;
-                }
-                .primary {
-                  font-size: 16px;
-                }
-                .secondary {
-                  font-size: 14px;
-                }
-                .dim {
-                  color: gray;
-                }
-                .star {
-                  width: 24px;
-                  height: 24px;
-                }
-                .no-selection {
-                  color: #999;
-                  margin-left: 10px;
-                  line-height: 50px;
-                }
-                iron-list {
-                  @apply(--layout-flex);
-                }
-      </style>
-    <iron-ajax auto
-    url="/statics/tickerlist.json"
-    params='{}'
-    handle-as="json"
-    last-response="{{data}}"></iron-ajax>
-      <iron-list id="itemsList" items="[[data]]" selected-items="{{selectedItems}}" selection-enabled multi-selection>
-                  <template>
-                    <div>
-                      <div tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.symbol]]" class$="[[_computedClass(selected)]]">
-                        <div class="avatar">
-                          [[item.symbol]]
-                        </div>
-                        <div class="pad">
-                          <div class="primary">
-                          [[item.name]]
-                          </div>
-                        </div>
-                        <iron-icon icon$="[[iconForItem(selected)]]" class="star"></iron-icon>
-                      </div>
-                      <div class="border"></div>
-                    </div>
-                  </template>
-                </iron-list>
-    </template>
-
-    <script>
-        Polymer({
-            is: 'tickers-list',
-            properties: {
-              output: {
-                type: Array,
-                reflectToAttribute: true,
-                notify: true,
-              }
-          },
-          observers: [
-           '_updateOutput(selectedItems.splices)'
-          ],
-          iconForItem: function(isSelected) {
-            return isSelected ? 'star' : 'star-border';
-          },
-          _computedClass: function(isSelected) {
-            var classes = 'item';
-            if (isSelected) {
-              classes += ' selected';
-            }
-            return classes;
-          },
-          _unselect: function(e) {
-            this.$.itemsList.deselectItem(e.model.item);
-          },
-          _updateOutput: function(selectedItems) {
-            if(this.selectedItems.length>0){
-              var selected = [];
-              for (index = 0; index < this.selectedItems.length; ++index) {
-                selected.push(this.selectedItems[index].symbol);
-              }
-              this.output = {"tickers-list":selected};
-            }
-          },
-
-          ready: function () {
-            this.output = {"tickers-list":[]};
-              // this.data = [{
-              //   "code": "ECX",
-              //   "name": "External Cit"
-              // },{
-              //   "code": "JSJ & HYK",
-              //   "name": "Jass and Xsa"
-              // },{
-              //   "code": "MOO",
-              //   "name": "Vector agrobusiness"
-              // },{
-              //   "code": "ALP",
-              //   "name": "Another business"
-              // },{
-              //   "code": "TTLE",
-              //   "name": "Test Business"
-              // },{
-              //   "code": "MOORN",
-              //   "name": "Morning hugs"
-              // },{
-              //   "code": "YU & XOU",
-              //   "name": "Chinese restaurant"
-              // }];
+        }
+        this.filtered = items;
+      },
+      _dataChanged: function (data) {
+        this.filtered = data;
+        this.selectedItems = [];
+      },
+      _unselect: function (e) {
+        this.$.itemsList.deselectItem(e.model.item);
+      },
+      _updateOutput: function (selectedItems) {
+        if (this.selectedItems.length > 0) {
+          var selected = [];
+          for (index = 0; index < this.selectedItems.length; ++index) {
+            selected.push(this.selectedItems[index]);
           }
-        });
-    </script>
+          this.output = { "tickers-list": selected };
+        }
+      },
+
+      ready: function () {
+        this.output = { "tickers-list": [] };
+      }
+    });
+  </script>
 </dom-module>
