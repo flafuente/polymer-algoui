@@ -29,7 +29,8 @@
     "vaadin-grid": "^1.2.0",
     "paper-tabs": "PolymerElements/paper-tabs#^1.7.0",
     "paper-date-picker": "polymer-paper-date-picker#^1.2.0",
-    "polymerfire": "firebase/polymerfire#^0.10.3"
+    "polymerfire": "firebase/polymerfire#^0.10.3",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.7"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

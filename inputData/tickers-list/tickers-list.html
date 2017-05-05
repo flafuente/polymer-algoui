@@ -1,16 +1,20 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+
 
 
 <dom-module id="tickers-list">
   <template>
     <style include="shared-styles">
        :host {
+         --my-toolbar-title-color: green;
         display: block;
         max-height: 300px;
         min-width: 350px;
@@ -63,7 +67,7 @@
         color: var(--paper-blue-600);
       }
       
-      .symbol {
+      .ticker {
         box-sizing: border-box;
         background-color: #009688;
         color: #fff;
@@ -115,26 +119,53 @@
       .row:hover {
         background-color: #ECECEC;
       }
+      paper-input {
+        --paper-input-container-label: {
+          color: white;
+        }
+        --paper-input-container-label-focus: {
+          color: white;
+        }
+        --paper-input-container-label-floating: {
+          color: white;
+        }
+        --paper-input-container-underline: {
+          color: white;
+        }
+        --paper-input-container-underline-focus: {
+          color: white;
+        }
+        --paper-input-container-underline-disabled: {
+          color: white;
+        }
+        --paper-input-container-input: {
+          color: white;
+        }
+      } 
     </style>
-    <iron-ajax auto url="/statics/tickerlist.json" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+    <iron-ajax auto url="/statics/tickers/spain.json" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+    <paper-toolbar middle-justify="center">
+      <paper-icon-button icon="menu"></paper-icon-button>
+      <!--<span class="title"></span>-->
+      <!--<paper-input class="title" label="Search" value="{{searchParam}}"></paper-input>-->
+      <paper-icon-button icon="search"></paper-icon-button>
+    </paper-toolbar>
     <div class="selectedList">
 
       <template is="dom-repeat" items="{{selectedItems}}">
-        <div symbol$="[[item]]" aria-label$="Select/Deselect [[item]]" on-tap="deSelect">
-          <div class="symbol">
+        <div ticker$="[[item]]" aria-label$="Select/Deselect [[item]]" on-tap="deSelect">
+          <div class="ticker">
             [[item]]
           </div>
         </div>
 
       </template>
     </div>
-    <paper-input label="Search" value="{{searchParam}}"></paper-input>
-
     <div class="itemsList">
       <template is="dom-repeat" items="{{filtered}}">
-        <div symbol$="[[item.symbol]]" class="row" aria-label$="Select/Deselect [[item.symbol]]" on-tap="selected">
-          <div class="symbol">
-            [[item.symbol]]
+        <div ticker$="[[item.ticker]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="selected">
+          <div class="ticker">
+            [[item.ticker]]
           </div>
           <div class="pad">
             <div class="primary">
@@ -161,8 +192,12 @@
         data: {
           type: Array,
           observer: '_dataChanged',
+          value: []
         },
-
+        filtered: {
+          type: Array,
+          value: []
+        },
         selectedItems: {
           type: Array
         },
@@ -177,20 +212,20 @@
       iconForItem: function (item) {
         debugger;
         for (var i = 0; i < this.selectedItems.length; i++) {
-          if (this.selectedItems[i].symbol == item.symbol) {
+          if (this.selectedItems[i].ticker == item.ticker) {
             return 'star';
           }
         }
         return 'star-border';
       },
       selected: function (e) {
-        if (this.selectedItems.indexOf(e.currentTarget.attributes.symbol.value) === -1) {
-          this.push('selectedItems', e.currentTarget.attributes.symbol.value)
+        if (this.selectedItems.indexOf(e.currentTarget.attributes.ticker.value) === -1) {
+          this.push('selectedItems', e.currentTarget.attributes.ticker.value)
         }
       },
 
       deSelect: function (e) {
-        var index = this.selectedItems.indexOf(e.currentTarget.attributes.symbol.value);
+        var index = this.selectedItems.indexOf(e.currentTarget.attributes.ticker.value);
         this.splice('selectedItems', index, 1);
       },
       _searchChanged: function (param, oldParam) {
