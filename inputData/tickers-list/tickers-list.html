@@ -8,7 +8,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
-
+<link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
 
 
 <dom-module id="tickers-list">
@@ -16,7 +16,7 @@
     <style include="shared-styles">
        :host {
         display: block;
-        position:relative;
+        position: relative;
         height: 300px;
         min-width: 380px;
         overflow-y: auto;
@@ -41,12 +41,6 @@
         max-height: 240px;
         overflow-y: auto;
       }
-
-      /*.selectedList {
-        max-height: 70px;
-        overflow-y: auto;
-        max-width: 380px;
-      }*/
 
       .selectedList>div {
         float: left;
@@ -121,18 +115,38 @@
       .row:hover {
         background-color: #ECECEC;
       }
+
       .primary {
         text-overflow: ellipsis;
         white-space: nowrap;
-        overflow:hidden !important;
-        max-width:210px;
+        overflow: hidden !important;
+        max-width: 210px;
       }
+
       .lesswidth .primary {
         text-overflow: ellipsis;
         white-space: nowrap;
-        overflow:hidden !important;
-        max-width:100px;
+        overflow: hidden !important;
+        max-width: 100px;
       }
+
+      .dropdown-content {
+        background-color: white;
+        color: black;
+        line-height: 20px;
+        padding:10px 0px;
+        border-radius: 3px;
+        text-transform:capitalize;
+        /*box-shadow: 0px 2px 6px #ccc;*/
+      }
+      .dropdown-content p {
+        padding:5px 15px;
+      }
+
+      .dropdown-content .selected {
+        background-color: #ececec;
+      }
+
       paper-input {
         --paper-input-container-label: {
           color: white;
@@ -157,7 +171,7 @@
         }
       }
     </style>
-    <iron-ajax auto url="/statics/tickers/spain.json" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+    <iron-ajax auto url="[[sourceTickers]]" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
     <paper-drawer-panel id="selectedPanel" force-narrow>
       <div drawer>
         <p>Selected Tickers</p>
@@ -177,14 +191,7 @@
             <div class="border"></div>
 
           </template>
-          <!--<template is="dom-repeat" items="{{selectedItems}}">
-            <div ticker$="[[item]]" aria-label$="Select/Deselect [[item]]" on-tap="deSelect">
-              <div class="ticker">
-                [[item]]
-              </div>
-            </div>
-
-          </template>-->
+          
         </div>
       </div>
       <div main>
@@ -193,7 +200,14 @@
           <paper-input label="Search" value="{{searchParam}}">
             <iron-icon icon="search" prefix></iron-icon>
           </paper-input>
-          <paper-icon-button icon="language"></paper-icon-button>
+          <paper-icon-button on-tap="open" icon="language"></paper-icon-button>
+          <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="top">
+            <div class="dropdown-content">
+              <template is="dom-repeat" items="{{languages}}">
+                <p on-tap="setLang" class$="{{_isSelected(item)}}">{{item}}</p>
+              </template>
+            </div>
+          </iron-dropdown>
         </paper-toolbar>
 
         <div class="itemsList">
@@ -221,9 +235,9 @@
   </template>
 
   <script>
-    function isContained(items,search) {
+    function isContained(items, search) {
       for (var i = 0; i < items.length; i++) {
-        if(items[i].ticker===search) return true;
+        if (items[i].ticker === search) return true;
       }
       return false;
     }
@@ -244,8 +258,18 @@
           type: Array,
           value: []
         },
+        languages: {
+          type: Array,
+          value: ['spain','germany','france']
+        },
+        selectedLang: {
+          type: String,
+          value: 'spain',
+          observer: '_langChanged'
+        },
         selectedItems: {
-          type: Array
+          type: Array,
+          value: []
         },
         searchParam: {
           type: String,
@@ -257,14 +281,16 @@
       ],
       selected: function (e) {
         var id = e.currentTarget.attributes.ticker.value;
-        if(!isContained(this.selectedItems,this.filtered[id].ticker)){
+        if (!isContained(this.selectedItems, this.filtered[id].ticker)) {
           this.$.selectedPanel.openDrawer();
           this.push('selectedItems', this.filtered[id]);
         }
       },
 
       deSelect: function (e) {
-        var index = this.selectedItems.indexOf(e.currentTarget.attributes.ticker.value);
+        // TODOOOOO - NOT WORKING WHEN CHANGING LANGS
+        // debugger;
+        var index = e.currentTarget.attributes.ticker.value;
         this.splice('selectedItems', index, 1);
       },
       _searchChanged: function (param, oldParam) {
@@ -281,7 +307,13 @@
       },
       _dataChanged: function (data) {
         this.filtered = data;
-        this.selectedItems = [];
+        this.searchParam = '';
+      },
+      _langChanged: function (lang) {
+        this.sourceTickers = '/statics/tickers/'+lang+'.json';
+      },
+      _isSelected: function (item) {
+        return (item===this.selectedLang) ? 'selected' : '';
       },
       _updateOutput: function (selectedItems) {
         if (this.selectedItems.length > 0) {
@@ -293,6 +325,20 @@
             "tickers-list": selected
           };
         }
+      },
+
+      open: function () {
+        this.$.dropdown.open();
+      },
+      setLang: function (e) {
+        this.selectedLang = e.currentTarget.innerHTML;
+        var selectedItems = e.currentTarget.parentNode.querySelectorAll('p.selected');
+
+        for (var i = 0; i < selectedItems.length; i++) {
+          selectedItems[i].classList.remove('selected');
+        }
+        e.currentTarget.classList.add('selected');
+        this.$.dropdown.close();
       },
 
       ready: function () {
