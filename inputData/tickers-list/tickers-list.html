@@ -1,168 +1,351 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-list/iron-list.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
 
 
 <dom-module id="tickers-list">
-    <template>
-      <style include="shared-styles">
-      :host {
-            display: block;
-            max-height:300px;
-            min-width:350px;
-            overflow-y:auto;
-            float:left;
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+        position: relative;
+        height: 300px;
+        min-width: 380px;
+        overflow-y: auto;
+        float: left;
+      }
+
+      .content {
+        @apply(--layout-vertical);
+        height: 100%;
+      }
+
+      .itemsList>div {
+        @apply(--layout-flex);
+        display: flex;
+      }
+
+      .itemsList>div>div {
+        /*flex-grow: 1;*/
+      }
+
+      .itemsList {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .selectedList>div {
+        float: left;
+      }
+
+      .item {
+        @apply(--layout-horizontal);
+        cursor: pointer;
+        padding: 16px 22px;
+        border-bottom: 1px solid #DDD;
+      }
+
+      .item:focus,
+      .item.selected:focus {
+        outline: 0;
+        background-color: #ddd;
+      }
+
+      .item.selected .icon {
+        color: var(--paper-blue-600);
+      }
+
+      .ticker {
+        box-sizing: border-box;
+        background-color: #009688;
+        color: #fff;
+        width: 90px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .pad {
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        padding: 0 16px;
+        max-width: 250px;
+        /*width:100px;*/
+      }
+
+      .primary {
+        font-size: 16px;
+      }
+
+      .secondary {
+        font-size: 14px;
+      }
+
+      .dim {
+        color: gray;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .no-selection {
+        color: #999;
+        margin-left: 10px;
+        line-height: 50px;
+      }
+
+      .itemsList {
+        @apply(--layout-flex);
+      }
+
+      .row:hover {
+        background-color: #ECECEC;
+      }
+
+      .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 210px;
+      }
+
+      .lesswidth .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 100px;
+      }
+
+      .dropdown-content {
+        background-color: white;
+        color: black;
+        line-height: 20px;
+        padding:10px 0px;
+        border-radius: 3px;
+        text-transform:capitalize;
+        /*box-shadow: 0px 2px 6px #ccc;*/
+      }
+      .dropdown-content p {
+        padding:5px 15px;
+      }
+
+      .dropdown-content .selected {
+        background-color: #ececec;
+      }
+
+      paper-input {
+        --paper-input-container-label: {
+          color: white;
+        }
+        --paper-input-container-label-focus: {
+          color: white;
+        }
+        --paper-input-container-label-floating: {
+          color: white;
+        }
+        --paper-input-container-underline: {
+          color: white;
+        }
+        --paper-input-container-underline-focus: {
+          color: white;
+        }
+        --paper-input-container-underline-disabled: {
+          color: white;
+        }
+        --paper-input-container-input: {
+          color: white;
+        }
+      }
+    </style>
+    <iron-ajax auto url="[[sourceTickers]]" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+    <paper-drawer-panel id="selectedPanel" force-narrow>
+      <div drawer>
+        <p>Selected Tickers</p>
+        <div class="itemsList lesswidth">
+          <template is="dom-repeat" items="{{selectedItems}}">
+            <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="deSelect">
+              <div class="ticker">
+                [[item.ticker]]
+              </div>
+              <div class="pad">
+                <div class="primary">
+                  [[item.name]]
+                </div>
+              </div>
+              <iron-icon icon="delete" class="icon"></iron-icon>
+            </div>
+            <div class="border"></div>
+
+          </template>
+          
+        </div>
+      </div>
+      <div main>
+        <paper-toolbar middle-justify="center">
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <paper-input label="Search" value="{{searchParam}}">
+            <iron-icon icon="search" prefix></iron-icon>
+          </paper-input>
+          <paper-icon-button on-tap="open" icon="language"></paper-icon-button>
+          <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="top">
+            <div class="dropdown-content">
+              <template is="dom-repeat" items="{{languages}}">
+                <p on-tap="setLang" class$="{{_isSelected(item)}}">{{item}}</p>
+              </template>
+            </div>
+          </iron-dropdown>
+        </paper-toolbar>
+
+        <div class="itemsList">
+          <template is="dom-repeat" items="{{filtered}}">
+            <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="selected">
+              <div class="ticker">
+                [[item.ticker]]
+              </div>
+              <div class="pad">
+                <div class="primary">
+                  [[item.name]]
+                </div>
+              </div>
+              <iron-icon icon="add" class="icon"></iron-icon>
+            </div>
+            <div class="border"></div>
+
+          </template>
+        </div>
+
+
+      </div>
+    </paper-drawer-panel>
+
+  </template>
+
+  <script>
+    function isContained(items, search) {
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].ticker === search) return true;
+      }
+      return false;
+    }
+    Polymer({
+      is: 'tickers-list',
+      properties: {
+        output: {
+          type: Array,
+          reflectToAttribute: true,
+          notify: true,
+        },
+        data: {
+          type: Array,
+          observer: '_dataChanged',
+          value: []
+        },
+        filtered: {
+          type: Array,
+          value: []
+        },
+        languages: {
+          type: Array,
+          value: ['spain','germany','france']
+        },
+        selectedLang: {
+          type: String,
+          value: 'spain',
+          observer: '_langChanged'
+        },
+        selectedItems: {
+          type: Array,
+          value: []
+        },
+        searchParam: {
+          type: String,
+          observer: '_searchChanged'
+        }
+      },
+      observers: [
+        '_updateOutput(selectedItems.splices)'
+      ],
+      selected: function (e) {
+        var id = e.currentTarget.attributes.ticker.value;
+        if (!isContained(this.selectedItems, this.filtered[id].ticker)) {
+          this.$.selectedPanel.openDrawer();
+          this.push('selectedItems', this.filtered[id]);
+        }
+      },
+
+      deSelect: function (e) {
+        // TODOOOOO - NOT WORKING WHEN CHANGING LANGS
+        // debugger;
+        var index = e.currentTarget.attributes.ticker.value;
+        this.splice('selectedItems', index, 1);
+      },
+      _searchChanged: function (param, oldParam) {
+        // In case string contained in last search use filtered dataset
+        var targetArray = (oldParam && (param.slice(0, -1) === oldParam)) ? this.filtered : this.data;
+        param = param.toUpperCase();
+        var items = []
+        for (var i = 0; i < targetArray.length; i++) {
+          if (targetArray[i].name.indexOf(param) !== -1) {
+            items.push(targetArray[i]);
           }
-          iron-list {
-            flex: 1 1 auto;
-            max-height:300px;
+        }
+        this.filtered = items;
+      },
+      _dataChanged: function (data) {
+        this.filtered = data;
+        this.searchParam = '';
+      },
+      _langChanged: function (lang) {
+        this.sourceTickers = '/statics/tickers/'+lang+'.json';
+      },
+      _isSelected: function (item) {
+        return (item===this.selectedLang) ? 'selected' : '';
+      },
+      _updateOutput: function (selectedItems) {
+        if (this.selectedItems.length > 0) {
+          var selected = [];
+          for (index = 0; index < this.selectedItems.length; ++index) {
+            selected.push(this.selectedItems[index]);
           }
+          this.output = {
+            "tickers-list": selected
+          };
+        }
+      },
 
-                .content {
-                  @apply(--layout-vertical);
-                  height: 100%;
-                }
+      open: function () {
+        this.$.dropdown.open();
+      },
+      setLang: function (e) {
+        this.selectedLang = e.currentTarget.innerHTML;
+        var selectedItems = e.currentTarget.parentNode.querySelectorAll('p.selected');
 
-                #itemsList,
-                #selectedItemsList {
-                  @apply(--layout-flex);
-                }
-                .item {
-                  @apply(--layout-horizontal);
-                  cursor: pointer;
-                  padding: 16px 22px;
-                  border-bottom: 1px solid #DDD;
-                }
-                .item:focus,
-                .item.selected:focus {
-                  outline: 0;
-                  background-color: #ddd;
-                }
-                .item.selected .star {
-                  color: var(--paper-blue-600);
-                }
-                .avatar {
+        for (var i = 0; i < selectedItems.length; i++) {
+          selectedItems[i].classList.remove('selected');
+        }
+        e.currentTarget.classList.add('selected');
+        this.$.dropdown.close();
+      },
 
-                  box-sizing: border-box;
-                  background-color: #009688;
-                  color:#fff;
-                  width: 90px;
-                  text-align: center;
-                }
-                .pad {
-                  @apply(--layout-flex);
-                  @apply(--layout-vertical);
-                  padding: 0 16px;
-                }
-                .primary {
-                  font-size: 16px;
-                }
-                .secondary {
-                  font-size: 14px;
-                }
-                .dim {
-                  color: gray;
-                }
-                .star {
-                  width: 24px;
-                  height: 24px;
-                }
-                .no-selection {
-                  color: #999;
-                  margin-left: 10px;
-                  line-height: 50px;
-                }
-                iron-list {
-                  @apply(--layout-flex);
-                }
-      </style>
-
-      <iron-list id="itemsList" items="[[data]]" selected-items="{{selectedItems}}" selection-enabled multi-selection>
-                  <template>
-                    <div>
-                      <div tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.code]]" class$="[[_computedClass(selected)]]">
-                        <div class="avatar">
-                          [[item.code]]
-                        </div>
-                        <div class="pad">
-                          <div class="primary">
-                          [[item.name]]
-                          </div>
-                        </div>
-                        <iron-icon icon$="[[iconForItem(selected)]]" class="star"></iron-icon>
-                      </div>
-                      <div class="border"></div>
-                    </div>
-                  </template>
-                </iron-list>
-    </template>
-
-    <script>
-        Polymer({
-            is: 'tickers-list',
-            properties: {
-              output: {
-                type: Array,
-                reflectToAttribute: true,
-                notify: true,
-              }
-          },
-          observers: [
-           '_updateOutput(selectedItems.splices)'
-          ],
-          iconForItem: function(isSelected) {
-            return isSelected ? 'star' : 'star-border';
-          },
-          _computedClass: function(isSelected) {
-            var classes = 'item';
-            if (isSelected) {
-              classes += ' selected';
-            }
-            return classes;
-          },
-          _unselect: function(e) {
-            this.$.itemsList.deselectItem(e.model.item);
-          },
-          _updateOutput: function(selectedItems) {
-            if(this.selectedItems.length>0){
-              var selected = [];
-              for (index = 0; index < this.selectedItems.length; ++index) {
-                selected.push(this.selectedItems[index].code);
-              }
-              this.output = {"tickers-list":selected};
-            }
-          },
-
-          ready: function () {
-            this.output = {"tickers-list":[]};
-              this.data = [{
-                "code": "ECX",
-                "name": "External Cit"
-              },{
-                "code": "JSJ & HYK",
-                "name": "Jass and Xsa"
-              },{
-                "code": "MOO",
-                "name": "Vector agrobusiness"
-              },{
-                "code": "ALP",
-                "name": "Another business"
-              },{
-                "code": "TTLE",
-                "name": "Test Business"
-              },{
-                "code": "MOORN",
-                "name": "Morning hugs"
-              },{
-                "code": "YU & XOU",
-                "name": "Chinese restaurant"
-              }];
-          }
-        });
-    </script>
+      ready: function () {
+        this.output = {
+          "tickers-list": []
+        };
+      }
+    });
+  </script>
 </dom-module>
