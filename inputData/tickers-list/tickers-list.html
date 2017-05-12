@@ -9,6 +9,7 @@
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
 
 <dom-module id="tickers-list">
@@ -134,13 +135,14 @@
         background-color: white;
         color: black;
         line-height: 20px;
-        padding:10px 0px;
+        padding: 10px 0px;
         border-radius: 3px;
-        text-transform:capitalize;
+        text-transform: capitalize;
         /*box-shadow: 0px 2px 6px #ccc;*/
       }
+
       .dropdown-content p {
-        padding:5px 15px;
+        padding: 5px 15px;
       }
 
       .dropdown-content .selected {
@@ -191,7 +193,7 @@
             <div class="border"></div>
 
           </template>
-          
+
         </div>
       </div>
       <div main>
@@ -254,13 +256,17 @@
           observer: '_dataChanged',
           value: []
         },
+        environment: {
+          type: String,
+          value: 'local'
+        },
         filtered: {
           type: Array,
           value: []
         },
         languages: {
           type: Array,
-          value: ['spain','germany','france']
+          value: ['spain', 'germany', 'france']
         },
         selectedLang: {
           type: String,
@@ -276,9 +282,11 @@
           observer: '_searchChanged'
         }
       },
+
       observers: [
         '_updateOutput(selectedItems.splices)'
       ],
+
       selected: function (e) {
         var id = e.currentTarget.attributes.ticker.value;
         if (!isContained(this.selectedItems, this.filtered[id].ticker)) {
@@ -288,11 +296,10 @@
       },
 
       deSelect: function (e) {
-        // TODOOOOO - NOT WORKING WHEN CHANGING LANGS
-        // debugger;
         var index = e.currentTarget.attributes.ticker.value;
         this.splice('selectedItems', index, 1);
       },
+
       _searchChanged: function (param, oldParam) {
         // In case string contained in last search use filtered dataset
         var targetArray = (oldParam && (param.slice(0, -1) === oldParam)) ? this.filtered : this.data;
@@ -305,16 +312,40 @@
         }
         this.filtered = items;
       },
+
       _dataChanged: function (data) {
         this.filtered = data;
         this.searchParam = '';
       },
+
       _langChanged: function (lang) {
-        this.sourceTickers = '/statics/tickers/'+lang+'.json';
+        // Construct api url
+        var src = this._getSrc();
+        this.sourceTickers = src.source + 'tickers/' + lang + src.ext;
       },
+
+      _getSrc: function () {
+        var envs = {
+          "dev": {
+            "source": "http://localhost:3000/api/v1/",
+            "ext": ""
+          },
+          "prod": {
+            "source": "https://api.algoui.com:3000/api/v1/",
+            "ext": ""
+          },
+          "local": {
+            "source": "/statics/",
+            "ext": ".json"
+          }
+        };
+        return envs[this.environment];
+      },
+
       _isSelected: function (item) {
-        return (item===this.selectedLang) ? 'selected' : '';
+        return (item === this.selectedLang) ? 'selected' : '';
       },
+
       _updateOutput: function (selectedItems) {
         if (this.selectedItems.length > 0) {
           var selected = [];
@@ -330,6 +361,7 @@
       open: function () {
         this.$.dropdown.open();
       },
+
       setLang: function (e) {
         this.selectedLang = e.currentTarget.innerHTML;
         var selectedItems = e.currentTarget.parentNode.querySelectorAll('p.selected');
