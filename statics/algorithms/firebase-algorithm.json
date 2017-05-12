@@ -1,0 +1,12 @@
+{
+    "_id": "5816190cd4b9840660507777",
+    "uniqueName": "firebase-algorithm",
+    "name": "Firebase algorithm",
+    "inputData": ["firebase-login"],
+    "outputData": [],
+    "images": {
+        "banner": "/images/firebase-banner.jpg"
+    },
+    "description": "Firebase algorithm for testing purposes",
+    "module": "algorithms/firebase-algorithm/init.js"
+}

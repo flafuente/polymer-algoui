@@ -1,9 +1,11 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../shared-styles.html">
+<link rel="import" href="../dynamic-components.html">
 <link rel="import" href="../app-data.html">
 
 
@@ -25,28 +27,6 @@
       a {
           text-decoration: none !important;
           color:inherit;
-      }
-      #input_container{
-        overflow:hidden;
-      }
-      /*TODO THIS SHOULD BE FIX*/
-      .color0{
-        border:1px solid #BBDEFB;
-        overflow:hidden;
-        display:inline-block;
-        margin:5px;
-      }
-      .color1{
-        border:1px solid #F8BBD0;
-        overflow:hidden;
-        display:inline-block;
-        margin:5px;
-      }
-      .color2{
-        border:1px solid #FFCDD2;
-        overflow:hidden;
-        display:inline-block;
-        margin:5px;
       }
     </style>
 
@@ -75,23 +55,20 @@
       </div>
       <div class="card-actions">
         <h2>Inputs:</h2>
-        <div id="input_container">
-        </div>
+        <dynamic-components elements="[[algorithmDetails.inputData]]" collected-data="{{collectedData}}"></dynamic-components>
 
-          <paper-button on-tap="postData" raised>Process Data</paper-button>
-          <iron-ajax
-          id="processAjax"
-          handle-as="json"
-          content-type="application/json"
-          method="POST"
-          on-response="_postComplete"
-          last-response="{{processResponse}}"></iron-ajax>
+        <paper-button on-tap="postData" raised>Process Data</paper-button>
+        <iron-ajax
+        id="processAjax"
+        handle-as="json"
+        content-type="application/json"
+        method="POST"
+        last-response="{{processResponse}}"></iron-ajax>
       </div>
 
       <div class="card-actions">
         <h2>Result:</h2>
-        <div id="output_container">
-        </div>
+        <dynamic-components elements-out="[[processResponse]]"></dynamic-components>
       </div>
     </paper-card>
   </template>
@@ -106,8 +83,10 @@
           observer: '_routeChanged'
         },
         algorithmDetails: {
-            type: Object,
-            observer: '_algorithmDetailsResponse'
+            type: Object
+        },
+        collectedData: {
+            type: Object
         }
 
       },
@@ -119,69 +98,12 @@
         }
       },
 
-      _algorithmDetailsResponse: function(algorithmDetails) {
-          console.log("Response", algorithmDetails);
-          // Load page import on demand. Show 404 page if fails
-          var resolvedPageUrl = "";
-
-          //Empty container
-          Polymer.dom(this.$.input_container).innerHTML = "";
-
-          //create component for each input
-          var index = 0;
-          for (index = 0; index < algorithmDetails.inputData.length; ++index) {
-            resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/inputData/' + algorithmDetails.inputData[index] + '/' + algorithmDetails.inputData[index] + '.html');
-            this.importHref(resolvedPageUrl, null, this._showPage404, true);
-            this.createComp(this.$.input_container, algorithmDetails.inputData[index], index, null);
-          }
-
-      },
-
       postData: function() { // Manual post using ironAjax to process algorithm
-        //Empty container
-        Polymer.dom(this.$.output_container).innerHTML = "";
-
         var ironAjax = this.shadowRoot.querySelector('#processAjax');
 
-        ironAjax.body = JSON.stringify({input:{data:this._collectData()}});
+        ironAjax.body = JSON.stringify({input:{data:this.collectedData}});
         ironAjax.url = this.dataSource;
         ironAjax.generateRequest();
-      },
-
-      _collectData: function() { // Collect data from input components
-        var dataCollected = {};
-
-        for (index = 0; index < this.algorithmDetails.inputData.length; ++index) {
-          var name = this.algorithmDetails.inputData[index];
-          var component = this.shadowRoot.querySelector(name);
-          dataCollected[name]=component.output[name];
-        }
-        return dataCollected;
-      },
-
-      _postComplete: function() { // Algorithm processing completed
-
-        // Get components from json keys
-        outputComponents = Object.keys(this.processResponse);
-        var resolvedPageUrl = "";
-
-        //Create component for each outputComponents
-        var index = 0;
-        for (index = 0; index < outputComponents.length; ++index) {
-          resolvedPageUrl = this.resolveUrl( 'http://localhost:8080/outputData/' + outputComponents[index] + '/' + outputComponents[index] + '.html');
-          this.importHref(resolvedPageUrl, null, this._showPage404, true);
-          this.createComp(this.$.output_container, outputComponents[index],99, JSON.stringify(this.processResponse[outputComponents[index]]));
-
-        }
-      },
-
-      createComp: function(container, element, index, componentData) { // create dynamic component function
-        var component = document.createElement(element);
-        component.setAttribute("class", "color"+index);
-        if (componentData) {
-          component.setAttribute("input-data", componentData);
-        }
-        Polymer.dom(container).appendChild(component);
       }
 
     });

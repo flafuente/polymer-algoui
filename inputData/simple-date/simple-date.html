@@ -6,6 +6,7 @@
       <style include="shared-styles">
         :host {
           display: block;
+          float:left;
         }
       </style>
 
@@ -21,6 +22,7 @@
               output: {
                 type: Object,
                 reflectToAttribute: true,
+                notify: true,
               },
               dateInput: {
                 type: String,
@@ -44,7 +46,6 @@
             var day   = check.format('D');
             var year  = check.format('YYYY');
             this.output = { "simple-date" :{day:day,month:month,year:year} };
-            console.log("LOADED!");
 
           },
         });

@@ -7,6 +7,7 @@
       <style include="shared-styles">
         :host {
           display: block;
+          float:left;
         }
         #chart{
           float:left;
@@ -35,6 +36,7 @@
               output: {
                 type: Object,
                 reflectToAttribute: true,
+                notify: true,
               },
               risk: {
                 type: String,

@@ -28,7 +28,6 @@
 
             _dataReceived: function(content) {
               content = JSON.parse(content);
-              console.log(content.data);
               Polymer.dom(this.$.html_content).innerHTML = content.data;
             }
         });

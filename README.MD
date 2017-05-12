@@ -29,5 +29,3 @@ Install [bower](https://github.com/bower/bower):
 
 ## Upcoming features:
 -Enable to load same elements input/output twice
-
--Bug: Cant access algorithms directly from url
