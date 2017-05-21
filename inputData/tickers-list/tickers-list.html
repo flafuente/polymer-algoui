@@ -148,7 +148,9 @@
       .dropdown-content .selected {
         background-color: #ececec;
       }
-
+      span.warning {
+        color:var(--google-red-700);
+      }
       paper-input {
         --paper-input-container-label: {
           color: white;
@@ -176,7 +178,7 @@
     <iron-ajax auto url="[[sourceTickers]]" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
     <paper-drawer-panel id="selectedPanel" force-narrow>
       <div drawer>
-        <p>Selected Tickers</p>
+        <p>Selected Tickers <span class="warning">(Max. {{tickerLimit}})</span></p>
         <div class="itemsList lesswidth">
           <template is="dom-repeat" items="{{selectedItems}}">
             <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="deSelect">
@@ -260,6 +262,10 @@
           type: String,
           value: 'prod'
         },
+        tickerLimit: {
+          type: Number,
+          value: 4
+        },
         filtered: {
           type: Array,
           value: []
@@ -289,9 +295,11 @@
 
       selected: function (e) {
         var id = e.currentTarget.attributes.ticker.value;
-        if (!isContained(this.selectedItems, this.filtered[id].ticker)) {
+        if (!isContained(this.selectedItems, this.filtered[id].ticker) && this.tickerLimit>this.selectedItems.length) {
           this.$.selectedPanel.openDrawer();
           this.push('selectedItems', this.filtered[id]);
+        }else {
+          this.$.selectedPanel.openDrawer();
         }
       },
 
