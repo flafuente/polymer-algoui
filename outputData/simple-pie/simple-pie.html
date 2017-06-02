@@ -1,0 +1,76 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/chart-elements/chart-pie.html">
+
+
+<dom-module id="simple-pie">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+        padding: 30px;
+        width: 100%;
+      }
+
+      google-chart {
+        padding: 20px;
+      }
+      .chart {
+        float:left;
+      }
+      .chart h3 {
+        text-align:center;
+      }
+
+    </style>
+    <template is="dom-repeat" items={{rows}}>
+      <div class="chart">
+        <h3>[[item.title]]</h3>
+        <chart-pie class="square-chart" data="[[item]]"></chart-pie>
+      </div>
+    </template>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'simple-pie',
+
+      properties: {
+        inputData: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_dataReceived'
+        }
+      },
+
+      _dataReceived: function (content) {
+        var bgColors = ['#F44336', '#E91E63', '#9C27B0', '#009688', '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4'];
+        var bgHoverColors = ['#E57373', '#F06292', '#BA68C8', '#4DB6AC', '#7986CB', '#64B5F6', '#4FC3F7', '#4DD0E1'];
+        content = JSON.parse(content);
+
+        // Populate labels
+        var pieCharts = Object.keys(content);
+
+        //Populate Pie Charts
+        var rows = [];
+        for (x = 0; x < pieCharts.length; ++x) {
+          var labels = Object.keys(content[pieCharts[x]]);
+          var data = [];
+          for (var z = 0; z < labels.length; z++) {
+            data.push(content[pieCharts[x]][labels[z]]);
+          }
+          rows.push({
+            'labels': labels,
+            'title': pieCharts[x],
+            'datasets': [{
+              'data': data,
+              'backgroundColor': bgColors,
+            'hoverBackgroundColor': bgHoverColors
+            }]
+          });
+        }
+        this.rows = rows;
+      }
+    });
+  </script>
+</dom-module>
