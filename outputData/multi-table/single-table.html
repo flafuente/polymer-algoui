@@ -1,0 +1,84 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/vaadin-grid/vaadin-grid.html">
+
+
+<dom-module id="single-table">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: inline-block;
+        width: 100%;
+      }
+    </style>
+    <h2>[[title]]</h2>
+    <vaadin-grid demo items="[[rows]]">
+      <table id="main">
+        <!-- <colgroup>
+          <template is="dom-repeat" items="{{cols}}">
+            <col sortable>
+          </template>
+        </colgroup> -->
+        <thead>
+          <tr>
+            <template is="dom-repeat" items="{{cols}}">
+              <th>[[item]]</th>
+            </template>
+          </tr>
+        </thead>
+      </table>
+    </vaadin-grid>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'single-table',
+
+      properties: {
+        items: {
+          type: String,
+          observer: '_itemsReceived'
+        },
+        title: {
+          type: String
+        }
+      },
+      _itemsReceived: function (content) {
+        var contentColKeys = Object.keys(content);
+        var contentRowKeys = Object.keys(content[contentColKeys[0]]);
+        var rows = contentRowKeys.length;
+        var cols = contentColKeys.length;
+
+        // Populate rows
+        var tableRows = [];
+        var colgroup = document.createElement("colgroup");
+        var container = this.shadowRoot.querySelector("#main");
+
+        var colsH = contentColKeys.slice(0);
+        colsH.unshift("Name"); // Insert column description
+
+        for (index = 0; index < colsH.length; ++index) { //contentColKeys[index]
+          // Create and append col to colgroup
+          var col = document.createElement("col");
+          col.setAttribute("resizable", '');
+          col.setAttribute("sortable", '');
+          col.setAttribute("name", colsH[index]);
+          Polymer.dom(colgroup).appendChild(col);
+        }
+
+        for (x = 0; x < rows; ++x) { //contentRowKeys[x]
+          cellObject = {};
+          cellObject["Name"] = contentRowKeys[x];
+          for (i = 0; i < cols; ++i) { //contentColKeys[index]
+            cellObject[contentColKeys[i]] = content[contentColKeys[i]][contentRowKeys[x]];
+          }
+          tableRows.push(cellObject);
+        }
+
+        Polymer.dom(container).appendChild(colgroup);
+
+        this.rows = tableRows;
+        this.cols = colsH;
+      }
+    });
+  </script>
+</dom-module>
