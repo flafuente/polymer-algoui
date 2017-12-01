@@ -1,0 +1,47 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="single-table.html">
+
+
+<dom-module id="multi-table">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: inline-block;
+        width: 100%;
+        max-height: 300px;
+      }
+    </style>
+    <template is="dom-repeat" items="{{processedItems}}">
+      <single-table items=[[item.items]] title=[[item.title]]></single-table>
+    </template>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'multi-table',
+
+      properties: {
+        inputData: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_dataReceived'
+        }
+      },
+
+      _dataReceived: function (content) {
+
+        content = JSON.parse(content);
+        var temporalArray = [];
+        content.forEach(element => {
+          var objectKey = Object.keys(element)[0];
+          temporalArray.push({
+            "title": objectKey,
+            "items": element[objectKey]
+          });
+        });
+        this.processedItems = temporalArray;
+
+      }
+    });
+  </script>
+</dom-module>
