@@ -1,0 +1,219 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+
+<dom-module id="single-ticker-list">
+    <template>
+        <style include="shared-styles">
+             :host {
+                display: block;
+                position: relative;
+                /* min-height: 200px; */
+                min-width: 380px;
+                overflow-y: auto;
+                float: left;
+            }
+
+            .content {
+                @apply(--layout-vertical);
+                height: 100%;
+            }
+
+            .itemsList>div {
+                @apply(--layout-flex);
+                display: flex;
+            }
+
+            .itemsList>div>div {
+                /*flex-grow: 1;*/
+            }
+
+            .itemsList {
+                max-height: 240px;
+                overflow-y: auto;
+            }
+
+            .selectedList>div {
+                float: left;
+            }
+
+            .item {
+                @apply(--layout-horizontal);
+                cursor: pointer;
+                padding: 16px 22px;
+                border-bottom: 1px solid #DDD;
+            }
+
+            .item:focus,
+            .item.selected:focus {
+                outline: 0;
+                background-color: #ddd;
+            }
+
+            .item.selected .icon {
+                color: var(--paper-blue-600);
+            }
+
+            .ticker {
+                box-sizing: border-box;
+                background-color: #009688;
+                color: #fff;
+                width: 90px;
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+            }
+
+            .pad {
+                @apply(--layout-flex);
+                @apply(--layout-vertical);
+                padding: 0 16px;
+                max-width: 250px;
+                /*width:100px;*/
+            }
+
+            .primary {
+                font-size: 16px;
+            }
+
+            .secondary {
+                font-size: 14px;
+            }
+
+            .dim {
+                color: gray;
+            }
+
+            .icon {
+                width: 24px;
+                height: 24px;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+            }
+
+            .no-selection {
+                color: #999;
+                margin-left: 10px;
+                line-height: 50px;
+            }
+
+            .itemsList {
+                @apply(--layout-flex);
+            }
+
+            .row:hover,
+            .h-active {
+                background-color: #ECECEC;
+            }
+
+            .primary {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden !important;
+                max-width: 210px;
+            }
+
+            .lesswidth .primary {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden !important;
+                max-width: 100px;
+            }
+
+            .dropdown-content {
+                background-color: white;
+                color: black;
+                line-height: 20px;
+                padding: 10px 0px;
+                border-radius: 3px;
+                text-transform: capitalize;
+                /*box-shadow: 0px 2px 6px #ccc;*/
+            }
+
+            .dropdown-content p {
+                padding: 5px 15px;
+            }
+
+            .dropdown-content .selected {
+                background-color: #ececec;
+            }
+        </style>
+        <iron-ajax auto url="[[sourceTickers]]" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+        <div class="itemsList">
+            <h3>Select Benchmark</h3>
+            <template is="dom-repeat" items="{{data}}">
+                <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="selected">
+                    <div class="ticker">
+                        [[item.ticker]]
+                    </div>
+                    <div class="pad">
+                        <div class="primary">
+                            [[item.country]]
+                        </div>
+                    </div>
+                    <!-- <iron-icon icon="add" class="icon"></iron-icon> -->
+                </div>
+                <div class="border"></div>
+
+            </template>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'single-ticker-list',
+            properties: {
+                output: {
+                    type: Array,
+                    reflectToAttribute: true,
+                    notify: true,
+                },
+                sourceTickers: {
+                    type: String,
+                    reflectToAttribute: false,
+                    notify: true,
+                },
+                environment: {
+                    type: String,
+                    value: 'prod'
+                }
+            },
+
+            ready: function () {
+                var src = this._getSrc();
+                this.sourceTickers = src.source + 'dictionaries/benchmarks';
+            },
+            selected: function (e) {
+                var id = e.currentTarget.attributes.ticker.value;
+                // Remove all active classes
+                var elems = e.currentTarget.parentNode.querySelectorAll(".h-active");
+                [].forEach.call(elems, function (el) {
+                    el.classList.remove("h-active");
+                });
+                // add active class
+                e.currentTarget.setAttribute("class", "h-active");
+                this.output = {
+                    "single-ticker-list": this.data[id]
+                };
+            },
+            _getSrc: function () {
+                var envs = {
+                    "dev": {
+                        "source": "http://localhost:3000/api/v1/",
+                        "ext": ""
+                    },
+                    "prod": {
+                        "source": "https://api.algoui.com:3000/api/v1/",
+                        "ext": ""
+                    },
+                    "local": {
+                        "source": "/statics/",
+                        "ext": ".json"
+                    }
+                };
+                return envs[this.environment];
+            }
+        });
+    </script>
+</dom-module>

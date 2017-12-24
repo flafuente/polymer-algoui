@@ -1,0 +1,65 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="data-type">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+          float:left;
+          min-width: 380px;
+        }
+        #chart{
+          float:left;
+        }
+        .controls {
+          float:left;
+        }
+      </style>
+
+
+      <div class="controls">
+        <!-- <template> -->
+          <paper-dropdown-menu label="Data type">
+            <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="value" selected="{{type}}">
+              <paper-item value="all">All</paper-item>
+              <paper-item value="general">General</paper-item>
+              <paper-item value="statistic">Statistic</paper-item>
+              <paper-item value="risks">Risks</paper-item>
+              <paper-item value="absolute">Absolute</paper-item>
+              <paper-item value="relative">Relative</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+      </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'data-type',
+            properties: {
+              output: {
+                type: Object,
+                reflectToAttribute: true,
+                notify: true,
+              },
+              type: {
+                type: String,
+                value: 'All',
+                observer: '_updateDataset'
+              }
+          },
+          _updateDataset: function(selected) {
+            this.data = {};
+            this.output = { "data-type" :selected };
+          },
+
+          ready: function () {
+            this.output = {"data-type":"All"};
+
+          },
+        });
+    </script>
+</dom-module>
