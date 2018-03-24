@@ -1,0 +1,242 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+
+<dom-module id="investment-selector">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+        position: relative;
+        height: 300px;
+        min-width: 380px;
+        overflow-y: auto;
+        float: left;
+      }
+      .content {
+        @apply(--layout-vertical);
+        height: 100%;
+      }
+
+      .itemsList>div {
+        @apply(--layout-flex);
+        display: flex;
+      }
+
+      .itemsList>div>div {
+        /*flex-grow: 1;*/
+      }
+
+      .itemsList {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .selectedList>div {
+        float: left;
+      }
+
+      .item {
+        @apply(--layout-horizontal);
+        cursor: pointer;
+        padding: 16px 22px;
+        border-bottom: 1px solid #DDD;
+      }
+
+      .item:focus,
+      .item.selected:focus {
+        outline: 0;
+        background-color: #ddd;
+      }
+
+      .item.selected .icon {
+        color: var(--paper-blue-600);
+      }
+
+      .ticker {
+        box-sizing: border-box;
+        background-color: #009688;
+        color: #fff;
+        width: 90px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .pad {
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        padding: 0 16px;
+        max-width: 250px;
+        /*width:100px;*/
+      }
+
+      .primary {
+        font-size: 16px;
+      }
+
+      .secondary {
+        font-size: 14px;
+      }
+
+      .dim {
+        color: gray;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .no-selection {
+        color: #999;
+        margin-left: 10px;
+        line-height: 50px;
+      }
+
+      .itemsList {
+        @apply(--layout-flex);
+      }
+
+      .row:hover {
+        background-color: #ECECEC;
+      }
+
+      .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 210px;
+      }
+
+      .lesswidth .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 100px;
+      }
+
+      .dropdown-content {
+        background-color: white;
+        color: black;
+        line-height: 20px;
+        padding: 10px 0px;
+        border-radius: 3px;
+        text-transform: capitalize;
+        /*box-shadow: 0px 2px 6px #ccc;*/
+      }
+
+      .dropdown-content p {
+        padding: 5px 15px;
+      }
+
+      .dropdown-content .selected {
+        background-color: #ececec;
+      }
+      span.warning {
+        color:var(--google-red-700);
+      }
+      paper-input.innerInput {
+        height: 53px;
+        margin-top: -25px;
+        --paper-input-container-label: {
+          color: '#000000';
+        }
+        --paper-input-container-label-focus: {
+          color: '#000000';
+        }
+        --paper-input-container-label-floating: {
+          color: '#000000';
+        }
+        --paper-input-container-underline: {
+          color: '#000000';
+        }
+        --paper-input-container-underline-focus: {
+          color: '#000000';
+        }
+        --paper-input-container-underline-disabled: {
+          color: '#000000';
+        }
+        --paper-input-container-input: {
+          color: '#000000';
+        }
+      }
+    </style>
+        <p>Investment Portfolio</p>
+        <div class="itemsList lesswidth">
+          <template is="dom-repeat" items="{{selectedItems}}">
+            <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]">
+              <div class="ticker">
+                [[item.ticker]]
+              </div>
+              <div class="pad">
+                <div class="primary">
+                  <paper-input ticker$="[[item.name]]" on-input='change' class="innerInput" type="number">
+                    <div prefix>€</div>
+                  </paper-input>
+                </div>
+              </div>
+            </div>
+            <div class="border"></div>
+
+          </template>
+
+        </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'investment-selector',
+      properties: {
+        output: {
+          type: Array,
+          reflectToAttribute: true,
+          notify: true,
+        },
+        selectedItems: {
+          type: Array,
+          value: []
+        },
+      },
+      change: function (e) {
+        const value = e.currentTarget.value;
+        const index = e.currentTarget.attributes.ticker.value;
+
+        let items = this.output["investment-selector"];
+        items[index]= parseInt(value, 10);
+        console.log("Itesm", items);
+        this.output = {
+          "investment-selector": items
+        };
+      },
+
+
+      attached: function() {
+        this.attachedShowItemsFn = this.updateSelected.bind(this);
+
+        this.fetcher = document;
+        this.fetcher.addEventListener('selected-updated', this.attachedShowItemsFn);
+      },
+      detached: function() {
+        this.fetcher.removeEventListener('selected-updated', this.attachedShowItemsFn);
+
+        // the detached method is called when the component is removed.
+        // Hence, we need to remove external references.
+        this.fetcher = null;
+      },
+      updateSelected: function(e) {
+        this.set('selectedItems',[]);
+        this.set('selectedItems',e.detail);
+      },
+      ready: function () {
+        this.output = {
+          "investment-selector": {}
+        };
+      }
+    });
+  </script>
+</dom-module>

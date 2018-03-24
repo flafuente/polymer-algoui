@@ -1,5 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<!-- <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
@@ -9,7 +9,7 @@
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
-<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html"> -->
 
 
 <dom-module id="tickers-list">
@@ -301,11 +301,13 @@
         }else {
           this.$.selectedPanel.openDrawer();
         }
+        this.fire('selected-updated', this.selectedItems);
       },
 
       deSelect: function (e) {
         var index = e.currentTarget.attributes.ticker.value;
         this.splice('selectedItems', index, 1);
+        this.fire('selected-updated', this.selectedItems);
       },
 
       _searchChanged: function (param, oldParam) {
