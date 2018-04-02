@@ -1,0 +1,63 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<dom-module id="optimization-type">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+          float:left;
+          min-width: 380px;
+        }
+
+        .controls, paper-dropdown-menu {
+          width:100%;
+        }
+      </style>
+
+
+      <div class="controls">
+        <!-- <template> -->
+          <paper-dropdown-menu label="Optimization type">
+            <paper-listbox slot="dropdown-content" class="dropdown-content" attr-for-selected="value" selected="{{type}}">
+              <paper-item value="Indexed approach">Indexed approach</paper-item>
+              <paper-item value="Minimum-variance approach">Minimum-variance approach</paper-item>
+              <paper-item value="Equally-weighted approach">Equally-weighted approach</paper-item>
+              <paper-item value="Risk parity approach">Risk parity approach</paper-item>
+              <paper-item value="Volatility-weighted approach">Volatility-weighted approach</paper-item>
+              <paper-item value="Betting against beta approach">Betting against beta approach</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+      </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'optimization-type',
+            properties: {
+              output: {
+                type: Object,
+                reflectToAttribute: true,
+                notify: true,
+              },
+              type: {
+                type: String,
+                value: 'All',
+                observer: '_updateDataset'
+              }
+          },
+          _updateDataset: function(selected) {
+            this.data = {};
+            this.output = { "optimization-type" :selected };
+          },
+
+          ready: function () {
+            this.output = {"optimization-type":"All"};
+
+          },
+        });
+    </script>
+</dom-module>
