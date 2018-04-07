@@ -1,14 +1,14 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
 
-<dom-module id="investment-selector">
+<dom-module id="user-views">
   <template>
     <style include="shared-styles">
        :host {
         display: block;
         position: relative;
         height: 200px;
-        min-width: 250px;
+        min-width: 180px;
         overflow-y: auto;
         float: left;
       }
@@ -128,7 +128,15 @@
         text-transform: capitalize;
         /*box-shadow: 0px 2px 6px #ccc;*/
       }
-
+      .equal {
+        color:#FE5F55;
+      }
+      .down {
+        color:#E63462;
+      }
+      .up {
+        color:#C7EFCF;
+      }
       .dropdown-content p {
         padding: 5px 15px;
       }
@@ -139,44 +147,17 @@
       span.warning {
         color:var(--google-red-700);
       }
-      paper-input.innerInput {
-        height: 53px;
-        margin-top: -25px;
-        --paper-input-container-label: {
-          color: '#000000';
-        }
-        --paper-input-container-label-focus: {
-          color: '#000000';
-        }
-        --paper-input-container-label-floating: {
-          color: '#000000';
-        }
-        --paper-input-container-underline: {
-          color: '#000000';
-        }
-        --paper-input-container-underline-focus: {
-          color: '#000000';
-        }
-        --paper-input-container-underline-disabled: {
-          color: '#000000';
-        }
-        --paper-input-container-input: {
-          color: '#000000';
-        }
-      }
     </style>
-        <p>Investment Portfolio</p>
+        <p>User Prediction (Tap to change)</p>
         <div class="itemsList lesswidth">
-          <template is="dom-repeat" items="{{selectedItems}}">
-            <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]">
+          <template is="dom-repeat" items="[[selectedItems]]">
+            <div name$="[[item.name]]" class="row" aria-label$="Select/Deselect" on-tap='change'>
               <div class="ticker">
                 [[item.ticker]]
               </div>
               <div class="pad">
                 <div class="primary">
-                  <paper-input ticker$="[[item.name]]" on-input='change' class="innerInput" type="number">
-                    <div prefix>€</div>
-                  </paper-input>
+                    <iron-icon class$="{{item.icon}}" icon="{{getIcon(item)}}"></iron-icon>
                 </div>
               </div>
             </div>
@@ -190,7 +171,7 @@
 
   <script>
     Polymer({
-      is: 'investment-selector',
+      is: 'user-views',
       properties: {
         output: {
           type: Array,
@@ -203,18 +184,26 @@
         },
       },
       change: function (e) {
-        const value = e.currentTarget.value;
-        const index = e.currentTarget.attributes.ticker.value;
-
-        let items = this.output["investment-selector"];
-        items[index]= parseInt(value, 10);
-        console.log("Itesm", items);
+        const index = e.currentTarget.attributes.name.value;
+        // console.log(this.selectedItems);
+        let items = this.output["user-views"];
+        e.currentTarget.querySelector('iron-icon').setAttribute('icon', this.getIcon({icon: this.calcNext(items[index])}));
+        e.currentTarget.querySelector('iron-icon').setAttribute('class', this.calcNext(items[index]));
+        items[index]= this.calcNext(items[index]);
         this.output = {
-          "investment-selector": items
+          "user-views": items
         };
       },
 
-
+      calcNext: function (current) {
+        const next = (current==='up') ? 'down': (current==='down') ? 'equal' : 'up';
+        return next;
+      },
+      getIcon: function (item) {
+        const iconset = {'equal': 'trending-flat','up': 'trending-up','down': 'trending-down'};
+        console.log('icon',item);
+        return iconset[item.icon];
+      },
       attached: function() {
         this.attachedShowItemsFn = this.updateSelected.bind(this);
 
@@ -229,12 +218,25 @@
         this.fetcher = null;
       },
       updateSelected: function(e) {
+        const userViews = {};
+        for (var i = 0; i < e.detail.length; i++) {
+          if (!this.output['user-views'][e.detail[i].name]) {
+            e.detail[i]['icon'] = 'equal';
+            userViews[e.detail[i].name]='equal';
+          }else {
+            e.detail[i]['icon'] = this.output['user-views'][e.detail[i].name];
+            userViews[e.detail[i].name]=this.output['user-views'][e.detail[i].name];
+          }
+        }
+        this.output = {
+          "user-views": userViews
+        };
         this.set('selectedItems',[]);
         this.set('selectedItems',e.detail);
       },
       ready: function () {
         this.output = {
-          "investment-selector": {}
+          "user-views": {}
         };
       }
     });
