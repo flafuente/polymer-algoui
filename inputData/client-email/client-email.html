@@ -1,0 +1,65 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="client-email">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+          float:left;
+          min-width: 380px;
+        }
+
+        .controls, paper-input {
+          /* width:100%; */
+        }
+      </style>
+
+<h1>Contact details:</h1>
+      <div class="controls">
+        <paper-input label="Name" value="{{name}}" class="innerInput">
+        </paper-input>
+        <paper-input label="Email" value="{{email}}" class="innerInput" type="email">
+        </paper-input>
+      </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'client-email',
+            properties: {
+              output: {
+                type: Object,
+                reflectToAttribute: true,
+                notify: true,
+                value: genDefault()
+              },
+              email: {
+                type: String,
+                value: '',
+                observer: '_updateEmail'
+              },
+              name: {
+                type: String,
+                value: '',
+                observer: '_updateName'
+              }
+          },
+
+          _updateEmail: function(selected) {
+            const data = JSON.parse(JSON.stringify(this.output));
+            data['client-email']['email'] = selected;
+            this.set('output', data);
+          },
+
+          _updateName: function(selected) {
+            const data = JSON.parse(JSON.stringify(this.output));
+            data['client-email']['name'] = selected;
+            this.set('output', data);
+          },
+        });
+        function genDefault() {
+          return {'client-email': { name: '', email: ''}};
+        }
+    </script>
+</dom-module>
