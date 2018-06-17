@@ -1,0 +1,429 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<!-- <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html"> -->
+
+
+<dom-module id="tickers-list-operativa">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        position: relative;
+        height: 300px;
+        min-width: 380px;
+        overflow-y: auto;
+        float: left;
+      }
+
+      .content {
+        @apply(--layout-vertical);
+        height: 100%;
+      }
+
+      .itemsList>div {
+        @apply(--layout-flex);
+        display: flex;
+      }
+
+      .itemsList>div>div {
+        /*flex-grow: 1;*/
+      }
+
+      .itemsList {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .selectedList>div {
+        float: left;
+      }
+
+      .item {
+        @apply(--layout-horizontal);
+        cursor: pointer;
+        padding: 16px 22px;
+        border-bottom: 1px solid #DDD;
+      }
+
+      .item:focus,
+      .item.selected:focus {
+        outline: 0;
+        background-color: #ddd;
+      }
+
+      .item.selected .icon {
+        color: var(--paper-blue-600);
+      }
+
+      .ticker {
+        box-sizing: border-box;
+        background-color: #009688;
+        color: #fff;
+        width: 90px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .pad {
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        padding: 0 16px;
+        max-width: 250px;
+        /*width:100px;*/
+      }
+
+      .primary {
+        font-size: 16px;
+      }
+
+      .secondary {
+        font-size: 14px;
+      }
+
+      .dim {
+        color: gray;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .no-selection {
+        color: #999;
+        margin-left: 10px;
+        line-height: 50px;
+      }
+
+      .itemsList {
+        @apply(--layout-flex);
+      }
+
+      .row:hover {
+        background-color: #ECECEC;
+      }
+
+      .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 210px;
+      }
+
+      .lesswidth .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 100px;
+      }
+
+      .dropdown-content {
+        background-color: white;
+        color: black;
+        line-height: 20px;
+        padding: 10px 0px;
+        border-radius: 3px;
+        text-transform: capitalize;
+        /*box-shadow: 0px 2px 6px #ccc;*/
+      }
+
+      .dropdown-content p {
+        padding: 5px 15px;
+      }
+
+      .dropdown-content .selected {
+        background-color: #ececec;
+      }
+
+      span.warning {
+        color: var(--google-red-700);
+      }
+
+      paper-input {
+        --paper-input-container-label: {
+          color: white;
+        }
+        --paper-input-container-label-focus: {
+          color: white;
+        }
+        --paper-input-container-label-floating: {
+          color: white;
+        }
+        --paper-input-container-underline: {
+          color: white;
+        }
+        --paper-input-container-underline-focus: {
+          color: white;
+        }
+        --paper-input-container-underline-disabled: {
+          color: white;
+        }
+        --paper-input-container-input: {
+          color: white;
+        }
+      }
+      .hide {
+        display:none;
+      }
+    </style>
+    <iron-ajax auto url="[[sourceTickers]]" params='{}' handle-as="json" last-response="{{data}}"></iron-ajax>
+    <!-- <template is="dom-if" if="{{!visible}}"> -->
+    <paper-drawer-panel class$="[[_setClass(visible)]]" id="selectedPanel" force-narrow>
+      <div drawer>
+        <p>Selected Tickers
+          <span class="warning">(Max. {{tickerLimit}})</span>
+        </p>
+        <div class="itemsList lesswidth">
+          <template is="dom-repeat" items="{{selectedItems}}">
+            <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="deSelect">
+              <div class="ticker">
+                [[item.ticker]]
+              </div>
+              <div class="pad">
+                <div class="primary">
+                  [[item.name]]
+                </div>
+              </div>
+              <iron-icon icon="delete" class="icon"></iron-icon>
+            </div>
+            <div class="border"></div>
+
+          </template>
+
+        </div>
+      </div>
+      <div main>
+        <paper-toolbar middle-justify="center">
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <paper-input label="Search" value="{{searchParam}}">
+            <iron-icon icon="search" prefix></iron-icon>
+          </paper-input>
+          <paper-icon-button on-tap="open" icon="language"></paper-icon-button>
+          <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="top">
+            <div class="dropdown-content">
+              <template is="dom-repeat" items="{{languages}}">
+                <p on-tap="setLang" class$="{{_isSelected(item)}}">{{item}}</p>
+              </template>
+            </div>
+          </iron-dropdown>
+        </paper-toolbar>
+
+        <div class="itemsList">
+          <template is="dom-repeat" items="{{filtered}}">
+            <div ticker$="[[index]]" class="row" aria-label$="Select/Deselect [[item.ticker]]" on-tap="selected">
+              <div class="ticker">
+                [[item.ticker]]
+              </div>
+              <div class="pad">
+                <div class="primary">
+                  [[item.name]]
+                </div>
+              </div>
+              <iron-icon icon="add" class="icon"></iron-icon>
+            </div>
+            <div class="border"></div>
+
+          </template>
+        </div>
+
+
+      </div>
+    </paper-drawer-panel>
+  <!-- </template> -->
+  </template>
+
+  <script>
+    function isContained(items, search) {
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].ticker === search) return true;
+      }
+      return false;
+    }
+    Polymer({
+      is: 'tickers-list-operativa',
+      properties: {
+        output: {
+          type: Array,
+          reflectToAttribute: true,
+          notify: true,
+        },
+        data: {
+          type: Array,
+          observer: '_dataChanged',
+          value: []
+        },
+        environment: {
+          type: String,
+          value: 'prod'
+        },
+        tickerLimit: {
+          type: Number,
+          value: 4
+        },
+        filtered: {
+          type: Array,
+          value: []
+        },
+        visible: {
+          type: Boolean,
+          value: false
+        },
+        languages: {
+          type: Array,
+          value: ['spain', 'germany', 'france']
+        },
+        selectedLang: {
+          type: String,
+          value: 'spain',
+          observer: '_langChanged'
+        },
+        selectedItems: {
+          type: Array,
+          value: []
+        },
+        searchParam: {
+          type: String,
+          observer: '_searchChanged'
+        }
+      },
+
+      observers: [
+        '_updateOutput(selectedItems.splices)'
+      ],
+
+      selected: function (e) {
+        var id = e.currentTarget.attributes.ticker.value;
+        if (!isContained(this.selectedItems, this.filtered[id].ticker) && this.tickerLimit > this.selectedItems.length) {
+          this.$.selectedPanel.openDrawer();
+          this.push('selectedItems', this.filtered[id]);
+        } else {
+          this.$.selectedPanel.openDrawer();
+        }
+        this.fire('tickers-list-operativa-updated', this.selectedItems);
+      },
+
+      deSelect: function (e) {
+        var index = e.currentTarget.attributes.ticker.value;
+        this.splice('selectedItems', index, 1);
+        this.fire('tickers-list-operativa-updated', this.selectedItems);
+      },
+
+      _searchChanged: function (param, oldParam) {
+        // In case string contained in last search use filtered dataset
+        var targetArray = (oldParam && (param.slice(0, -1) === oldParam)) ? this.filtered : this.data;
+        param = param.toUpperCase();
+        var items = []
+        for (var i = 0; i < targetArray.length; i++) {
+          if (targetArray[i].name.indexOf(param) !== -1) {
+            items.push(targetArray[i]);
+          }
+        }
+        this.filtered = items;
+      },
+
+      _dataChanged: function (data) {
+        this.filtered = data;
+        this.searchParam = '';
+      },
+
+      _langChanged: function (lang) {
+        // Construct api url
+        var src = this._getSrc();
+        this.sourceTickers = src.source + 'tickers/' + lang + src.ext;
+      },
+
+      _getSrc: function () {
+        var envs = {
+          "dev": {
+            "source": "http://localhost:3000/api/v1/",
+            "ext": ""
+          },
+          "prod": {
+            "source": "https://api.algoui.com:3000/api/v1/",
+            "ext": ""
+          },
+          "local": {
+            "source": "/statics/",
+            "ext": ".json"
+          }
+        };
+        return envs[this.environment];
+      },
+
+      _isSelected: function (item) {
+        return (item === this.selectedLang) ? 'selected' : '';
+      },
+
+      _updateOutput: function (selectedItems) {
+        if (this.selectedItems.length > 0) {
+          var selected = [];
+          for (index = 0; index < this.selectedItems.length; ++index) {
+            selected.push(this.selectedItems[index]);
+          }
+          this.output = {
+            "tickers-list-operativa": selected
+          };
+        }
+      },
+
+      open: function () {
+        this.$.dropdown.open();
+      },
+
+      setLang: function (e) {
+        this.selectedLang = e.currentTarget.innerHTML;
+        var selectedItems = e.currentTarget.parentNode.querySelectorAll('p.selected');
+
+        for (var i = 0; i < selectedItems.length; i++) {
+          selectedItems[i].classList.remove('selected');
+        }
+        e.currentTarget.classList.add('selected');
+        this.$.dropdown.close();
+      },
+      updateSelected: function (e) {
+        if (!e.detail) {
+          this.output = {
+            "tickers-list-operativa": []
+          };
+          this.selectedItems = [];
+        }
+        this.set('visible', e.detail);
+      },
+      ready: function () {
+        this.output = {
+          "tickers-list-operativa": []
+        };
+      },
+      attached: function () {
+        this.attachedShowItemsFn = this.updateSelected.bind(this);
+
+        this.fetcher = document;
+        this.fetcher.addEventListener('operativa-verificador-updated', this.attachedShowItemsFn);
+      },
+      detached: function () {
+        this.fetcher.removeEventListener('operativa-verificador-updated', this.attachedShowItemsFn);
+
+        // the detached method is called when the component is removed.
+        // Hence, we need to remove external references.
+        this.fetcher = null;
+      },
+      _setClass: function (visible) {
+        return (visible)?'none':'hide';
+      }
+    });
+  </script>
+</dom-module>

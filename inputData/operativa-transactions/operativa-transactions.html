@@ -1,0 +1,269 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+
+<dom-module id="operativa-transactions">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+        position: relative;
+        height: 200px;
+        min-width: 180px;
+        overflow-y: auto;
+        float: left;
+      }
+      .content {
+        @apply(--layout-vertical);
+        height: 100%;
+      }
+
+      .itemsList>div {
+        @apply(--layout-flex);
+        display: flex;
+      }
+
+      .itemsList>div>div {
+        /*flex-grow: 1;*/
+      }
+
+      .itemsList {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .selectedList>div {
+        float: left;
+      }
+
+      .item {
+        @apply(--layout-horizontal);
+        cursor: pointer;
+        padding: 16px 22px;
+        border-bottom: 1px solid #DDD;
+      }
+
+      .item:focus,
+      .item.selected:focus {
+        outline: 0;
+        background-color: #ddd;
+      }
+
+      .item.selected .icon {
+        color: var(--paper-blue-600);
+      }
+
+      .ticker {
+        box-sizing: border-box;
+        background-color: #009688;
+        color: #fff;
+        width: 90px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .pad {
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        padding: 0 16px;
+        max-width: 250px;
+        /*width:100px;*/
+      }
+
+      .primary {
+        font-size: 16px;
+      }
+
+      .secondary {
+        font-size: 14px;
+      }
+
+      .dim {
+        color: gray;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .no-selection {
+        color: #999;
+        margin-left: 10px;
+        line-height: 50px;
+      }
+
+      .itemsList {
+        @apply(--layout-flex);
+      }
+
+      .row:hover {
+        background-color: #ECECEC;
+      }
+
+      .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 210px;
+      }
+
+      .lesswidth .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 100px;
+      }
+
+      .dropdown-content {
+        background-color: white;
+        color: black;
+        line-height: 20px;
+        padding: 10px 0px;
+        border-radius: 3px;
+        text-transform: capitalize;
+        /*box-shadow: 0px 2px 6px #ccc;*/
+      }
+      .equal {
+        color:#FE5F55;
+      }
+      .down {
+        color:#E63462;
+      }
+      .up {
+        color:#C7EFCF;
+      }
+      .dropdown-content p {
+        padding: 5px 15px;
+      }
+
+      .dropdown-content .selected {
+        background-color: #ececec;
+      }
+      span.warning {
+        color:var(--google-red-700);
+      }
+      .hide {
+        display:none;
+      }
+    </style>
+    <div class$="[[_setClass(visible)]]">
+      <p>User Prediction (Tap to change)</p>
+      <div class="itemsList lesswidth">
+        <template is="dom-repeat" items="[[selectedItems]]">
+          <div name$="[[item.name]]" class="row" aria-label$="Select/Deselect" on-tap='change'>
+            <div class="ticker">
+              [[item.ticker]]
+            </div>
+            <div class="pad">
+              <div class="primary">
+                  <iron-icon class$="{{item.icon}}" icon="{{getIcon(item)}}"></iron-icon>
+              </div>
+            </div>
+          </div>
+          <div class="border"></div>
+
+        </template>
+
+      </div>
+    </div>
+        
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'operativa-transactions',
+      properties: {
+        output: {
+          type: Array,
+          reflectToAttribute: true,
+          notify: true,
+        },
+        visible: {
+          type: Boolean,
+          value: false
+        },
+        selectedItems: {
+          type: Array,
+          value: []
+        },
+      },
+      change: function (e) {
+        const index = e.currentTarget.attributes.name.value;
+        // console.log(this.selectedItems);
+        let items = this.output["operativa-transactions"];
+        e.currentTarget.querySelector('iron-icon').setAttribute('icon', this.getIcon({icon: this.calcNext(items[index])}));
+        e.currentTarget.querySelector('iron-icon').setAttribute('class', this.calcNext(items[index]));
+        items[index]= this.calcNext(items[index]);
+        this.output = {
+          "operativa-transactions": items
+        };
+      },
+
+      calcNext: function (current) {
+        const next = (current==='up') ? 'down': (current==='down') ? 'equal' : 'up';
+        return next;
+      },
+      getIcon: function (item) {
+        const iconset = {'equal': 'trending-flat','up': 'trending-up','down': 'trending-down'};
+        console.log('icon',item);
+        return iconset[item.icon];
+      },
+      attached: function() {
+        this.attachedShowItemsFn = this.updateSelected.bind(this);
+        this.attachedShowComponentFn = this.updateLayout.bind(this);
+
+        this.fetcher = document;
+        this.fetcher.addEventListener('tickers-list-operativa-updated', this.attachedShowItemsFn);
+        this.fetcher.addEventListener('operativa-verificador-updated', this.attachedShowComponentFn);
+      },
+      detached: function() {
+        this.fetcher.removeEventListener('tickers-list-operativa-updated', this.attachedShowItemsFn);
+        this.fetcher.removeEventListener('operativa-verificador-updated', this.attachedShowComponentFn);
+
+        // the detached method is called when the component is removed.
+        // Hence, we need to remove external references.
+        this.fetcher = null;
+      },
+      updateLayout: function(e) {
+        if (!e.detail) {
+          this.output = {
+            "operativa-transactions": []
+          };
+          this.selectedItems = [];
+        }
+        this.set('visible', e.detail);
+      },
+      updateSelected: function(e) {
+        const userViews = {};
+        for (var i = 0; i < e.detail.length; i++) {
+          if (!this.output['operativa-transactions'][e.detail[i].name]) {
+            e.detail[i]['icon'] = 'equal';
+            userViews[e.detail[i].name]='equal';
+          }else {
+            e.detail[i]['icon'] = this.output['operativa-transactions'][e.detail[i].name];
+            userViews[e.detail[i].name]=this.output['operativa-transactions'][e.detail[i].name];
+          }
+        }
+        this.output = {
+          "operativa-transactions": userViews
+        };
+        this.set('selectedItems',[]);
+        this.set('selectedItems',e.detail);
+      },
+      ready: function () {
+        this.output = {
+          "operativa-transactions": {}
+        };
+      },
+      _setClass: function (visible) {
+        return (visible)?'none':'hide';
+      }
+    });
+  </script>
+</dom-module>
