@@ -1,17 +1,20 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
 
 <dom-module id="operativa-transactions">
   <template>
     <style include="shared-styles">
-       :host {
+      :host {
         display: block;
         position: relative;
         height: 200px;
-        min-width: 180px;
-        overflow-y: auto;
+        min-width: 280px;
+        overflow-y: auto !important;
         float: left;
       }
+
       .content {
         @apply(--layout-vertical);
         height: 100%;
@@ -28,7 +31,6 @@
 
       .itemsList {
         max-height: 240px;
-        overflow-y: auto;
       }
 
       .selectedList>div {
@@ -98,6 +100,8 @@
       }
 
       .itemsList {
+
+        overflow-y: auto;
         @apply(--layout-flex);
       }
 
@@ -128,15 +132,19 @@
         text-transform: capitalize;
         /*box-shadow: 0px 2px 6px #ccc;*/
       }
+
       .equal {
-        color:#FE5F55;
+        color: #FE5F55;
       }
+
       .down {
-        color:#E63462;
+        color: #E63462;
       }
+
       .up {
-        color:#C7EFCF;
+        color: #C7EFCF;
       }
+
       .dropdown-content p {
         padding: 5px 15px;
       }
@@ -144,34 +152,56 @@
       .dropdown-content .selected {
         background-color: #ececec;
       }
+
       span.warning {
-        color:var(--google-red-700);
+        color: var(--google-red-700);
       }
+
       .hide {
-        display:none;
+        display: none;
       }
     </style>
     <div class$="[[_setClass(visible)]]">
-      <p>User Prediction (Tap to change)</p>
+      <p>Transactions</p>
       <div class="itemsList lesswidth">
         <template is="dom-repeat" items="[[selectedItems]]">
-          <div name$="[[item.name]]" class="row" aria-label$="Select/Deselect" on-tap='change'>
+          <div class="row" aria-label$="Select/Deselect">
             <div class="ticker">
-              [[item.ticker]]
+              <paper-dropdown-menu label="Ticker">
+                <paper-listbox index$="[[index]]" slot="dropdown-content" class="dropdown-content" attr-for-selected="value" on-selected-item-changed="updateTicker">
+                  <template is="dom-repeat" items="[[listTickers]]" as="ticker">
+                    <paper-item value="[[ticker]]">[[ticker]]</paper-item>
+                  </template>
+                </paper-listbox>
+              </paper-dropdown-menu>
             </div>
             <div class="pad">
-              <div class="primary">
-                  <iron-icon class$="{{item.icon}}" icon="{{getIcon(item)}}"></iron-icon>
-              </div>
+              <paper-input index$="[[index]]" on-input='updateShares' class="innerInput" type="number">
+                <div suffix>Shares</div>
+              </paper-input>
+            </div>
+            <div class="pad">
+              <paper-dropdown-menu label="Action">
+                <paper-listbox index$="[[index]]" slot="dropdown-content" class="dropdown-content" attr-for-selected="value" on-selected-item-changed="updateAction">
+                  <paper-item value="buy">Buy</paper-item>
+                  <paper-item value="sell">Sell</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div class="pad">
+              <paper-input label="dd/mm/YYYY" index$="[[index]]" on-input='updateDate' auto-validate pattern="[0-9]{2}\/[0-9]{2}\/[0-9]{4}">
+              </paper-input>
             </div>
           </div>
           <div class="border"></div>
 
         </template>
+        <paper-button on-tap='_addRow' href="#">Add row</paper-button>
+        <paper-button on-tap='_removeRow' href="#">Remove row</paper-button>
 
       </div>
     </div>
-        
+
 
   </template>
 
@@ -192,29 +222,73 @@
           type: Array,
           value: []
         },
+        listTickers: {
+          type: Array,
+          value: []
+        },
       },
-      change: function (e) {
-        const index = e.currentTarget.attributes.name.value;
-        // console.log(this.selectedItems);
-        let items = this.output["operativa-transactions"];
-        e.currentTarget.querySelector('iron-icon').setAttribute('icon', this.getIcon({icon: this.calcNext(items[index])}));
-        e.currentTarget.querySelector('iron-icon').setAttribute('class', this.calcNext(items[index]));
-        items[index]= this.calcNext(items[index]);
+      _removeRow() {
+        let items = this.selectedItems;
+        items.splice(-1,1);
+        this.set('selectedItems',[]);
+        this.set('selectedItems',items);
+        this.output = {
+          "operativa-transactions": items
+        };
+        // this.set('selectedItems',e.detail);
+        // this.selectedItems = items;
+      },
+      _addRow() {
+        let items = this.selectedItems;
+        items.push({'name': '', 'no_shs': 0, 'buy_sell': '', 'date': ''});
+        this.set('selectedItems',[]);
+        this.set('selectedItems',items);
+        // this.set('selectedItems',e.detail);
+        // this.selectedItems = items;
+      },
+      updateShares: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const value = parseInt(e.currentTarget.value, 10);
+        let items = this.selectedItems;
+        items[index].no_shs = value;
+        this.output = {
+          "operativa-transactions": items
+        };
+        // console.log("NEW",{
+        //   "operativa-transactions": items
+        // },this.output);
+      },
+      updateDate: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const value = e.currentTarget.value;
+
+        let items = this.selectedItems;
+        items[index].date = value;
         this.output = {
           "operativa-transactions": items
         };
       },
+      updateAction: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const value = e.currentTarget.selected;
 
-      calcNext: function (current) {
-        const next = (current==='up') ? 'down': (current==='down') ? 'equal' : 'up';
-        return next;
+        let items = this.selectedItems;
+        items[index].buy_sell = value;
+        this.output = {
+          "operativa-transactions": items
+        };
       },
-      getIcon: function (item) {
-        const iconset = {'equal': 'trending-flat','up': 'trending-up','down': 'trending-down'};
-        console.log('icon',item);
-        return iconset[item.icon];
+      updateTicker: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const value = e.currentTarget.selected;
+// debugger;
+        let items = this.selectedItems;
+        items[index].name = value;
+        this.output = {
+          "operativa-transactions": items
+        };
       },
-      attached: function() {
+      attached: function () {
         this.attachedShowItemsFn = this.updateSelected.bind(this);
         this.attachedShowComponentFn = this.updateLayout.bind(this);
 
@@ -222,7 +296,7 @@
         this.fetcher.addEventListener('tickers-list-operativa-updated', this.attachedShowItemsFn);
         this.fetcher.addEventListener('operativa-verificador-updated', this.attachedShowComponentFn);
       },
-      detached: function() {
+      detached: function () {
         this.fetcher.removeEventListener('tickers-list-operativa-updated', this.attachedShowItemsFn);
         this.fetcher.removeEventListener('operativa-verificador-updated', this.attachedShowComponentFn);
 
@@ -230,39 +304,45 @@
         // Hence, we need to remove external references.
         this.fetcher = null;
       },
-      updateLayout: function(e) {
+      updateLayout: function (e) {
         if (!e.detail) {
           this.output = {
             "operativa-transactions": []
           };
-          this.selectedItems = [];
+          // this.selectedItems = [];
         }
         this.set('visible', e.detail);
       },
-      updateSelected: function(e) {
-        const userViews = {};
+      updateSelected: function (e) {
+        const userViews = [];
         for (var i = 0; i < e.detail.length; i++) {
-          if (!this.output['operativa-transactions'][e.detail[i].name]) {
-            e.detail[i]['icon'] = 'equal';
-            userViews[e.detail[i].name]='equal';
-          }else {
-            e.detail[i]['icon'] = this.output['operativa-transactions'][e.detail[i].name];
-            userViews[e.detail[i].name]=this.output['operativa-transactions'][e.detail[i].name];
-          }
+          userViews.push(e.detail[i].name);
+          // if (!this.output['operativa-transactions'][e.detail[i].name]) {
+          //   userViews[e.detail[i].name]={'no_shs':0,
+          //                            'buy_sell':'',
+          //                            'date':''
+          //                            };
+          // }else {
+          //   userViews[e.detail[i].name]=this.output['operativa-transactions'][e.detail[i].name];
+          // }
         }
-        this.output = {
-          "operativa-transactions": userViews
-        };
-        this.set('selectedItems',[]);
-        this.set('selectedItems',e.detail);
+        // this.listTickers = userViews;
+        this.set('listTickers',[]);
+        this.set('listTickers',userViews);
+        console.log(userViews);
+        // this.output = {
+        //   "operativa-transactions": userViews
+        // };
+        // this.set('selectedItems',[]);
+        // this.set('selectedItems',e.detail);
       },
       ready: function () {
         this.output = {
-          "operativa-transactions": {}
+          "operativa-transactions":[] 
         };
       },
       _setClass: function (visible) {
-        return (visible)?'none':'hide';
+        return (visible) ? 'none' : 'hide';
       }
     });
   </script>
