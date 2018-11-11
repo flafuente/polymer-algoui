@@ -1,0 +1,392 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+
+<dom-module id="user-opinion">
+  <template>
+    <style include="shared-styles">
+       :host {
+        display: block;
+        position: relative;
+        height: 200px;
+        min-width: 180px;
+        overflow-y: auto !important;
+        float: left;
+      }
+      .content {
+        @apply(--layout-vertical);
+        height: 100%;
+      }
+
+      .itemsList>div {
+        @apply(--layout-flex);
+        display: flex;
+      }
+
+      .itemsList>div>div {
+        /*flex-grow: 1;*/
+      }
+
+      .itemsList {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
+      .itemsList {
+                @apply(--layout-flex);
+            }
+
+      .selectedList>div {
+        float: left;
+      }
+
+      .item {
+        @apply(--layout-horizontal);
+        cursor: pointer;
+        padding: 16px 22px;
+        border-bottom: 1px solid #DDD;
+      }
+
+      .item:focus,
+      .item.selected:focus {
+        outline: 0;
+        background-color: #ddd;
+      }
+
+      .item.selected .icon {
+        color: var(--paper-blue-600);
+      }
+
+      .ticker {
+        box-sizing: border-box;
+        background-color: #009688;
+        color: #fff;
+        width: 90px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .pad {
+        @apply(--layout-flex);
+        @apply(--layout-vertical);
+        padding: 0 16px;
+        max-width: 250px;
+        /*width:100px;*/
+      }
+
+      .primary {
+        height:100%;
+      }
+
+      .secondary {
+        font-size: 14px;
+      }
+
+      .dim {
+        color: gray;
+      }
+
+      .primary iron-icon {
+        width: 35px;
+        height: 35px;
+        margin: 0 auto;
+        padding-top:20px;
+      }
+
+      .no-selection {
+        color: #999;
+        margin-left: 10px;
+        line-height: 50px;
+      }
+
+      .row:hover {
+        background-color: #ECECEC;
+      }
+
+      .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 210px;
+      }
+
+      .lesswidth .primary {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden !important;
+        max-width: 100px;
+      }
+
+      .dropdown-content {
+        background-color: white;
+        color: black;
+        line-height: 20px;
+        padding: 10px 0px;
+        border-radius: 3px;
+        text-transform: capitalize;
+        /*box-shadow: 0px 2px 6px #ccc;*/
+      }
+      .equal {
+        color:#FE5F55;
+      }
+      .down {
+        color:#E63462;
+      }
+      .up {
+        color:#C7EFCF;
+      }
+      .dropdown-content p {
+        padding: 5px 15px;
+      }
+
+      .dropdown-content .selected {
+        background-color: #ececec;
+      }
+      span.warning {
+        color:var(--google-red-700);
+      }
+    </style>
+    <div class="itemsList">
+        <p>User Prediction (Tap to change)</p>
+        
+          <template is="dom-repeat" id="mainSelector" items="[[selectedItems]]">
+            <div class='row'>
+              <div index$="[[index]]" class="pad" aria-label$="Select/Deselect" on-tap='change'>
+                <!-- <div class="pad"> -->
+                  <div class="primary">
+                      <iron-icon class$="{{getViewByIndex(index)}}" icon="{{getIconByIndex(index)}}"></iron-icon>
+                  </div>
+                <!-- </div> -->
+              </div>
+              <div class="pad">
+                  <paper-dropdown-menu id$="{{generateClass(index,'ticker')}}" index$="[[index]]" label="Ticker" multi="[[item.multi]]" on-iron-select="_updateTicker">
+                      <paper-listbox id$="{{generateClass(index,'tickerl')}}" index$="[[index]]" multi="[[item.multi]]" slot="dropdown-content" class="dropdown-content" attr-for-selected="value">
+                        <template is="dom-repeat" items="[[filteredItems]]" as="ticker">
+                          <paper-item value="[[ticker]]">[[ticker]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+              </div>
+              <div class="pad">
+                  <paper-dropdown-menu disabled$="[[!item.multi]]" id$="{{generateClass(index,'relative')}}" index$="[[index]]" label="Relative" multi="[[item.multi]]" on-iron-select="_updateRelative">
+                      <paper-listbox id$="{{generateClass(index,'relativel')}}" index$="[[index]]" multi="[[item.multi]]" slot="dropdown-content" class="dropdown-content" attr-for-selected="value">
+                        <template is="dom-repeat" items="[[filteredItems]]" as="ticker">
+                          <paper-item value="[[ticker]]">[[ticker]]</paper-item>
+                        </template>
+                      </paper-listbox>
+                    </paper-dropdown-menu>
+                </div>
+                <div class="pad">
+                  <paper-input index$="[[index]]" on-input='_updateVolatility' class="innerInput" type="number">
+                    <div suffix>%</div>
+                  </paper-input>
+                </div>
+            </div>
+            <div class="border"></div>
+          </template>
+          <paper-button on-tap='_addRow' href="#">Add row</paper-button>
+          <paper-button on-tap='_removeRow' href="#">Remove row</paper-button>
+        </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'user-opinion',
+      properties: {
+        output: {
+          type: Array,
+          reflectToAttribute: true,
+          notify: true,
+        },
+        selectedItems: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        availableItems: {
+          type: Array,
+          value: []
+        },
+        filteredItems: {
+          type: Array,
+          value: []
+        },
+      },
+
+      observers: [
+        '_updateOutput(selectedItems.*)'
+      ],
+
+      change: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        let items = this.selectedItems.slice();
+        const next = this.calcNext(items[index]['user-views']);
+        e.currentTarget.querySelector('iron-icon').setAttribute('icon', this.getIcon({icon: next}));
+        e.currentTarget.querySelector('iron-icon').setAttribute('class', next);
+        items[index]['user-views']= next;
+        this.set('selectedItems.'+index+'.user-views', next);
+        this.set('selectedItems.'+index+'.multi', (next==='outperform') ? true: false);
+        this.set('selectedItems.'+index+'.name', []);
+        this.set('selectedItems.'+index+'.relative_to', '');
+        const that = this;
+        that.cleanSelectors(index);
+        // this.updateAvailableItems();
+      },
+      updateAvailableItems: function () {
+        let items = this.availableItems.slice();
+        for (var i = 0; i < this.selectedItems.length; i++) {
+          const toRemove = this.selectedItems[i].name.concat(this.selectedItems[i].relative_to);
+          toRemove.map(x =>{
+            const pos = items.indexOf(x);
+            if (pos > -1)
+              items.splice(pos,1);
+          });
+
+          // Keep removing items ***
+        }
+        this.set('filteredItems', items)
+      },
+      cleanSelectors(index) {
+        const ticker = this.shadowRoot.querySelector("#ticker" + index);
+        const tickerl = this.shadowRoot.querySelector("#tickerl" + index);
+        const relative = this.shadowRoot.querySelector("#relative" + index);
+        const relativel = this.shadowRoot.querySelector("#relativel" + index);
+        ticker.selected = null;
+        ticker.value = null;
+        tickerl.selected = null;
+        tickerl.selectedItems = [];
+        tickerl.selectedValues = [];
+        relative.selected = null;
+        relative.value = null;
+        relativel.selectedValues = [];
+        relativel.selectedItems = [];
+
+        // JUST BECAUSE IT'S AN MVP!
+        tickerl.selectedItems = [];
+        tickerl.selectedValues = [];
+        tickerl.selectedItems = [];
+        tickerl.selectedValues = [];
+        tickerl.selectedItems = [];
+        tickerl.selectedValues = [];
+        tickerl.selectedItems = [];
+        tickerl.selectedValues = [];
+        relativel.selectedValues = [];
+        relativel.selectedItems = [];
+        relativel.selectedValues = [];
+        relativel.selectedItems = [];
+        relativel.selectedValues = [];
+        relativel.selectedItems = [];
+        relativel.selectedValues = [];
+        relativel.selectedItems = [];
+
+      },
+      generateClass(index, type) {
+        return type + index;
+      },
+      _updateTicker: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const target = e.currentTarget;
+        const res = (this.selectedItems[index]['user-views'] === 'outperform') ? target.value.split(', ') : target.value;
+        this.set('selectedItems.'+index+'.name', res);
+        // this.updateAvailableItems();
+      },
+      _updateRelative: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const target = e.currentTarget;
+        const res = target.value.split(', ');
+        this.set('selectedItems.'+index+'.relative_to', res);
+      },
+      _updateVolatility: function (e) {
+        const index = e.currentTarget.attributes.index.value;
+        const value = parseInt(e.currentTarget.value, 10);
+        this.set('selectedItems.'+index+'.volatility-view', value);
+      },
+      _removeRow() {
+        let items = this.selectedItems;
+        items.splice(-1,1);
+        this.set('selectedItems',[]);
+        this.set('selectedItems',items);
+        this.output = {
+          "user-opinion": items
+        };
+        // this.set('selectedItems',e.detail);
+        // this.selectedItems = items;
+      },
+      _addRow() {
+        // let items = this.selectedItems;
+        // this.selectedItems.push({'user-views': 'equal', 'name': [], 'volatility-view': 0, 'relative_to': []});
+        this.push('selectedItems', {'user-views': 'equal', 'name': [], 'volatility-view': 0, 'relative_to': [], 'multi': false});
+        // this.set('selectedItems',[]);
+        // this.set('selectedItems',items);
+        // this.set('selectedItems',e.detail);
+        // this.selectedItems = items;
+      },
+      calcNext: function (current) {
+        const next = (current==='up') ? 'down': (current==='down') ? 'outperform' : (current==='outperform') ? 'equal' : 'up';
+        return next;
+      },
+      getIcon: function (item) {
+        const iconset = {'equal': 'trending-flat','up': 'trending-up','down': 'trending-down','outperform': 'swap-vert'};
+        return iconset[item.icon];
+      },
+      getIconByIndex: function (index) {
+        const iconset = {'equal': 'trending-flat','up': 'trending-up','down': 'trending-down','outperform': 'swap-vert'};
+        return iconset[this.selectedItems[index]['user-views']];
+      },
+      getViewByIndex: function (index) {
+        return this.selectedItems[index]['user-views'];
+      },
+      isOutperform: function (index) {
+        return this.selectedItems[index]['user-views']=='outperform';
+      },
+      attached: function() {
+        this.attachedShowItemsFn = this.updateSelected.bind(this);
+
+        this.fetcher = document;
+        this.fetcher.addEventListener('selected-updated', this.attachedShowItemsFn);
+      },
+      detached: function() {
+        this.fetcher.removeEventListener('selected-updated', this.attachedShowItemsFn);
+
+        // the detached method is called when the component is removed.
+        // Hence, we need to remove external references.
+        this.fetcher = null;
+      },
+      _updateOutput: function (items) {
+        this.set('output', {
+          "user-opinion": items.base
+        });
+      },
+      updateSelected: function(e) {
+        // const userViews = {};
+        // for (var i = 0; i < e.detail.length; i++) {
+        //   if (!this.output['user-opinion'][e.detail[i].name]) {
+        //     e.detail[i]['icon'] = 'equal';
+        //     userViews[e.detail[i].name]='equal';
+        //   }else {
+        //     e.detail[i]['icon'] = this.output['user-opinion'][e.detail[i].name];
+        //     userViews[e.detail[i].name]=this.output['user-opinion'][e.detail[i].name];
+        //   }
+        // }
+        // this.output = {
+        //   "user-opinion": userViews
+        // };
+        const items = [];
+        e.detail.map(x =>{
+          items.push(x.name);
+        });
+        this.set('filteredItems',[]);
+        this.set('filteredItems',items);
+        // this.updateAvailableItems();
+      },
+      ready: function () {
+        this.output = {
+          "user-opinion": {}
+        };
+      }
+    });
+  </script>
+</dom-module>
