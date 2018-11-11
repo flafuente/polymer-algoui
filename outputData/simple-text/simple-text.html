@@ -28,7 +28,7 @@
 
             _dataReceived: function(content) {
               content = JSON.parse(content);
-              Polymer.dom(this.$.html_content).innerHTML = content.data;
+              Polymer.dom(this.$.html_content).innerHTML = (content.data) ? content.data : content;
             }
         });
     </script>
