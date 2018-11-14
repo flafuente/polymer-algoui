@@ -153,7 +153,7 @@
         
           <template is="dom-repeat" id="mainSelector" items="[[selectedItems]]">
             <div class='row'>
-              <div index$="[[index]]" class="pad" aria-label$="Select/Deselect" on-tap='change'>
+              <div index$="[[index]]" class="" aria-label$="Select/Deselect" on-tap='change'>
                 <!-- <div class="pad"> -->
                   <div class="primary">
                       <iron-icon class$="{{getViewByIndex(index)}}" icon="{{getIconByIndex(index)}}"></iron-icon>
@@ -179,7 +179,7 @@
                     </paper-dropdown-menu>
                 </div>
                 <div class="pad">
-                  <paper-input index$="[[index]]" on-input='_updateVolatility' class="innerInput" type="number">
+                  <paper-input label="Movement" index$="[[index]]" on-input='_updateVolatility' class="innerInput" type="number">
                     <div suffix>%</div>
                   </paper-input>
                 </div>
