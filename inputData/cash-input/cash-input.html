@@ -1,0 +1,54 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="cash-input">
+    <template>
+      <style include="shared-styles">
+        :host {
+          display: block;
+          float:left;
+          min-width: 380px;
+        }
+
+        .controls, paper-input {
+          /* width:100%; */
+        }
+      </style>
+
+
+      <div class="controls">
+        <!-- <template> -->
+          <paper-input label="Cash available at start period" value="{{total}}" class="innerInput" type="number">
+            <div prefix>€</div>
+          </paper-input>
+      </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'cash-input',
+            properties: {
+              output: {
+                type: Object,
+                reflectToAttribute: true,
+                notify: true,
+              },
+              total: {
+                type: Number,
+                value: 0,
+                observer: '_updateDataset'
+              }
+          },
+          _updateDataset: function(selected) {
+
+            this.data = {};
+            this.output = { "cash-input" :parseInt(selected,10) };
+          },
+
+          ready: function () {
+            this.output = {"cash-input":0};
+
+          },
+        });
+    </script>
+</dom-module>
