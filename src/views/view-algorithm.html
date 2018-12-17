@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/paper-card/paper-card.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../dynamic-components.html">
@@ -23,6 +24,17 @@
       }
       paper-card.white {
         --paper-card-header-color: #fff;
+      }
+      paper-spinner {
+        width: 50px;
+        height: 50px;
+      }
+      .container {
+        justify-content: center;
+        align-items: center;
+        width:100%;
+        display: flex;
+        margin-bottom:30px;
       }
       a {
           text-decoration: none !important;
@@ -61,6 +73,8 @@
         <iron-ajax
         id="processAjax"
         handle-as="json"
+        loading="{{showLoader}}"
+        last-error="{{processError}}"
         content-type="application/json"
         method="POST"
         last-response="{{processResponse}}"></iron-ajax>
@@ -68,6 +82,14 @@
 
       <div class="card-actions">
         <h2>Result:</h2>
+        <template is="dom-if" if="[[showLoader]]">
+          <div class="container">
+            <paper-spinner active></paper-spinner>
+          </div>
+        </template>
+        <template is="dom-if" if="[[showError]]">
+          <p>Error while processing, please try again.</p>
+        </template>
         <dynamic-components elements-out="[[processResponse]]"></dynamic-components>
       </div>
     </paper-card>
@@ -85,8 +107,23 @@
         algorithmDetails: {
             type: Object
         },
+        processResponse: {
+            type: Object
+        },
         collectedData: {
             type: Object
+        },
+        showLoader: {
+            type: Boolean,
+            value: false,
+        },
+        showError: {
+            type: Boolean,
+            value: false,
+        },
+        processError: {
+            type: Object,
+            observer: '_errorProcessed'
         }
 
       },
@@ -95,10 +132,18 @@
         if(this.route.prefix == '/algorithm'){
           this.path = 'algorithms/' + routeData.algorithm;
           this.algorithm = routeData.algorithm;
+          this.set('processResponse', {});
+          this.set('showError', false);
         }
       },
 
+      _errorProcessed: function(e) {
+        if (e) this.set('showError', true);
+      },
+
       postData: function() { // Manual post using ironAjax to process algorithm
+        this.set('showError', false);
+        this.set('processResponse', {});
         var ironAjax = this.shadowRoot.querySelector('#processAjax');
 
         ironAjax.body = JSON.stringify({input:{data:this.collectedData}});
