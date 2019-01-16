@@ -7,6 +7,7 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../shared-styles.html">
 <link rel="import" href="../dynamic-components.html">
+<link rel="import" href="../wizard-component.html">
 <link rel="import" href="../app-data.html">
 
 
@@ -67,9 +68,13 @@
       </div>
       <div class="card-actions">
         <h2>Inputs:</h2>
-        <dynamic-components elements="[[algorithmDetails.inputData]]" collected-data="{{collectedData}}"></dynamic-components>
+        <!-- <dynamic-components elements="[[algorithmDetails.inputData]]" collected-data="{{collectedData}}"></dynamic-components> -->
+        <wizard-component elements="[[algorithmDetails.inputData]]" active="{{active}}" collected-data="{{collectedData}}"></wizard-component>
+        <template is="dom-if" if="[[showProcess]]">
+          <paper-button on-tap="postData" raised>Process Data</paper-button>
+        </template>
+        
 
-        <paper-button on-tap="postData" raised>Process Data</paper-button>
         <iron-ajax
         id="processAjax"
         handle-as="json"
@@ -105,7 +110,8 @@
           observer: '_routeChanged'
         },
         algorithmDetails: {
-            type: Object
+          type: Object,
+          observer: '_detailsFetched'
         },
         processResponse: {
             type: Object
@@ -113,11 +119,20 @@
         collectedData: {
             type: Object
         },
+        active: {
+          type: Number,
+          value: 1,
+          observer: '_activeChanged'
+        },
         showLoader: {
             type: Boolean,
             value: false,
         },
         showError: {
+            type: Boolean,
+            value: false,
+        },
+        showProcess: {
             type: Boolean,
             value: false,
         },
@@ -140,7 +155,13 @@
       _errorProcessed: function(e) {
         if (e) this.set('showError', true);
       },
-
+      _activeChanged: function(active) {
+        this.set('showProcess', (this.algorithmDetails && active === this.algorithmDetails.inputData.length) ? true: false);
+      },
+      _detailsFetched: function(algorithmDetails) {
+        this.set('active', 1)
+        this.set('showProcess', (algorithmDetails && 1 === algorithmDetails.inputData.length) ? true: false);
+      },
       postData: function() { // Manual post using ironAjax to process algorithm
         this.set('showError', false);
         this.set('processResponse', {});
